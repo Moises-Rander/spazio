@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Spazio · protótipo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet">
+<style>
+/* Layout: palco verde-escuro com o roteiro do apresentador à esquerda e o celular clicável ao centro; telas reconstruídas a partir do Figma (tokens do spazio-tokens.json) */
+:root{
+  /* palco */
+  --stage:#0E1713; --stage-2:#15221C; --stage-line:#25362E; --stage-ink:#E7E5DD; --stage-mute:#8F9C94; --bezel:#050806;
+  /* app · valores do Figma */
+  --bg:#F2F1EC; --card:#FBFAF6; --line:#DCDCD3; --ink:#000; --ink-64:rgba(0,0,0,.64); --ink-80:rgba(0,0,0,.8); --ink-48:rgba(0,0,0,.48);
+  --sec:#66706A; --sec-64:rgba(102,112,106,.64); --div:rgba(0,0,0,.12); --div-16:rgba(0,0,0,.16);
+  --wine:#5C1F2A; --olive:#474C2C; --green:#1E392E; --gold:#D9BF92; --ok:#48935B; --nav:#EAEAEA; --stepper:#16201A;
+  --f:"Inter",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+*{box-sizing:border-box}
+body{background:var(--stage);color:var(--stage-ink);font-family:var(--f);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.i{display:block;flex:0 0 auto}
+
+/* ---------- palco e roteiro ---------- */
+.stage{min-height:100%;max-width:1160px;margin:0 auto;padding-block:24px;display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:48px;align-items:start}
+.rail{display:flex;flex-direction:column;gap:20px;min-width:0}
+.rail-brand{display:flex;flex-direction:column;gap:6px}
+.rail-brand .logo{height:42px;width:110px;color:var(--stage-ink)}
+.rail-brand span{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--stage-mute)}
+.journeys{display:flex;flex-direction:column;gap:16px}
+.journey{display:flex;flex-direction:column;gap:4px}
+.journey h3{margin:0 0 4px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.jbtn{display:grid;grid-template-columns:26px 1fr;align-items:center;gap:10px;text-align:left;padding:6px 10px;border-radius:8px;color:var(--stage-mute);font-size:14px}
+.jbtn:hover{background:var(--stage-2);color:var(--stage-ink)}
+.jbtn .n{font-variant-numeric:tabular-nums;font-size:12px;opacity:.7}
+.jbtn[aria-current="true"]{background:var(--stage-2);color:var(--stage-ink);box-shadow:inset 2px 0 0 var(--gold)}
+.talk{border-top:1px solid var(--stage-line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.talk .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stage-mute)}
+.talk p{margin:0;font-size:15px;line-height:1.55;max-width:36ch}
+.talk .vs{font-size:13px;color:var(--gold);line-height:1.5}
+.rail-ctrl{display:flex;gap:8px;flex-wrap:wrap}
+.rbtn{border:1px solid var(--stage-line);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--stage-ink)}
+.rbtn:hover{border-color:var(--gold)}
+.hint{font-size:12px;color:var(--stage-mute)}
+.mini{display:none}
+
+/* ---------- celular ---------- */
+.phone-wrap{display:flex;justify-content:center;min-width:0}
+.phone{--ph:min(844px,calc(100dvh - 48px));height:var(--ph);width:calc(var(--ph) * 390 / 844);max-width:100%;min-width:0;flex:0 0 auto;background:var(--bezel);border-radius:54px;padding:11px;box-shadow:0 0 0 1px #2A3530,0 40px 80px -30px #000}
+.screen{position:relative;height:100%;border-radius:44px;overflow:hidden;background:var(--bg);color:var(--ink);color-scheme:light;font-size:14px;line-height:1.2}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:108px;height:30px;border-radius:20px;background:var(--bezel);z-index:60}
+.sbar{position:absolute;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:4px 28px 0 44px;font-size:16px;font-weight:600;z-index:50;background:var(--bg);font-variant-numeric:tabular-nums;pointer-events:none}
+.sbar .sb-i{display:flex;gap:6px;align-items:center}
+.screen.on-color .sbar{background:transparent;color:#fff}
+.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.view::-webkit-scrollbar{display:none}
+#dock{position:absolute;left:0;right:0;bottom:0;z-index:40}
+.toast{position:absolute;top:54px;left:50%;transform:translate(-50%,-12px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:10px 16px;border-radius:12px;z-index:70;width:max-content;max-width:86%;text-align:center;transition:.25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- peças comuns (Figma) ---------- */
+.body{display:flex;flex-direction:column;gap:16px;padding:48px 16px 24px}
+.hdr{display:grid;grid-template-columns:36px 1fr 36px;gap:12px;align-items:center;min-height:52px}
+.hdr.wide{grid-template-columns:36px 1fr 50px}
+.hdr-t{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.hdr-t b{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hdr-t span{font-size:12px;color:var(--ink-64)}
+.on-dark .hdr-t b{color:#fff} .on-dark .hdr-t span{color:rgba(255,255,255,.64)}
+.cbtn{width:36px;height:36px;border-radius:19px;background:rgba(0,0,0,.04);display:grid;place-items:center;color:var(--ink)}
+.on-dark .cbtn{background:rgba(0,0,0,.12);color:#F2F1EC}
+.cbtn-l{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--ink-64);text-align:center;line-height:1.2}
+.on-dark .cbtn-l{color:rgba(255,255,255,.64)}
+.sp{width:36px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec-h{display:flex;align-items:center;gap:8px}
+.sec-h h2{margin:0;flex:1;font-size:18px;font-weight:500}
+.sec-h .more{font-size:12px;color:var(--sec);padding:4px}
+.hs{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;margin:0 -16px;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none}
+.hs::-webkit-scrollbar{display:none}
+.hs>*{flex:0 0 auto;scroll-snap-align:start}
+.lbl14{font-size:14px;color:var(--sec);padding:0 4px}
+.pcard{width:150px;display:flex;flex-direction:column;gap:8px}
+.pimg{position:relative;width:148px;height:148px;border-radius:12px;background:var(--wine);overflow:hidden;align-self:center}
+.glow{position:absolute;inset:0;background:radial-gradient(circle at 30% 15%,rgba(255,255,255,.14),rgba(255,255,255,0) 60%);pointer-events:none}
+.pimg img{position:relative;width:100%;height:100%;object-fit:cover}
+.pinfo{display:flex;flex-direction:column;gap:4px;padding:0 4px}
+.brand{font-size:12px;color:var(--sec);text-transform:uppercase}
+.pname{font-size:14px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.2;min-height:34px}
+.meta12{font-size:12px;color:var(--sec)}
+.price14{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.qadd{position:absolute;right:8px;bottom:8px;width:32px;height:32px;border-radius:50%;background:var(--bg);color:var(--ink);display:grid;place-items:center;box-shadow:0 4px 10px -4px rgba(0,0,0,.4)}
+.qadd.on{background:var(--ink);color:var(--bg);font-size:13px;font-weight:600}
+.rows{display:flex;flex-direction:column}
+.mrow{position:relative;display:flex;align-items:center;gap:12px;padding:0 12px;min-height:120px;border-radius:16px;overflow:hidden;text-align:left;width:100%}
+.mrow+.mrow{border-top:.8px solid var(--div-16);border-radius:0 0 16px 16px}
+.mtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.mtx b{font-size:14px;font-weight:500;line-height:1.2}
+.mtx p{margin:0;font-size:12px;color:var(--ink-80);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mimg{position:relative;width:120px;height:120px;flex:0 0 auto}
+.mimg img{width:100%;height:100%;object-fit:contain}
+.mimg .qadd{right:2px;bottom:10px;background:var(--ink);color:var(--bg)}
+.mimg .pill-step{position:absolute;left:50%;bottom:6px;transform:translateX(-50%)}
+.btn{height:52px;border-radius:14px;background:#000;color:var(--bg);font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 18px;white-space:nowrap;width:100%}
+.btn.out{background:transparent;color:#000;border:1.5px solid #000}
+.btn.sm{height:44px;font-size:14px}
+.qty{height:52px;border-radius:14px;background:var(--card);display:flex;align-items:center;gap:12px;padding:0 18px;flex:0 0 auto;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.qty button{display:grid;place-items:center}
+.pill-step{display:flex;align-items:center;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--stepper);flex:0 0 auto}
+.pill-step button{width:34px;height:34px;display:grid;place-items:center;font-size:17px}
+.pill-step b{min-width:18px;text-align:center;font-size:13px;font-weight:600}
+.dock{display:flex;flex-direction:column;gap:16px;padding:16px 16px 32px;background:#fff}
+.dock.clear{background:linear-gradient(to bottom,rgba(242,241,236,0),var(--bg) 22%);padding-top:12px;padding-left:12px;padding-right:12px}
+.dock .row{display:flex;gap:8px;align-items:center}
+.tot{display:flex;justify-content:space-between;gap:12px;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.card{background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:16px}
+.card.g8{gap:8px}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.ch b{font-size:16px;font-weight:500}
+.ch span{font-size:12px;color:var(--ink-64);font-variant-numeric:tabular-nums}
+.hr{height:1px;background:var(--div);flex:0 0 auto}
+.hr16{height:1px;background:var(--div-16);flex:0 0 auto}
+.inp{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:var(--card);border:1px solid transparent;font-size:14px;color:var(--ink)}
+.inp input,.inp select{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:inherit;outline:none;appearance:none}
+.inp input::placeholder{color:var(--sec-64)}
+.inp.bd{border-color:var(--line);border-radius:12px}
+.radio{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--div-16);text-align:left;width:100%}
+.radio[aria-pressed="true"]{border:2px solid #000;padding:11px}
+.radio .rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.radio .rt b{font-size:14px;font-weight:500}
+.radio .rt small{font-size:12px;color:var(--ink-64)}
+.radio .rv{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.radio .rv.free{color:var(--olive)}
+.radio i{width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.12);flex:0 0 auto}
+.radio[aria-pressed="true"] i{border:4px solid #000}
+.ricon{width:36px;height:36px;border-radius:100px;background:rgba(0,0,0,.12);display:grid;place-items:center;flex:0 0 auto}
+.kv{display:flex;flex-direction:column;gap:8px;padding:0 8px;font-size:14px;color:var(--ink-64)}
+.kv div{display:flex;justify-content:space-between;gap:12px}
+.kv b{font-weight:500;font-variant-numeric:tabular-nums}
+.st{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.lnk{font-size:14px;font-weight:600;text-decoration:underline;text-align:center;padding:4px}
+.empty{padding:48px 24px;text-align:center;color:var(--ink-64);display:flex;flex-direction:column;align-items:center;gap:8px}
+.empty img{width:180px;height:120px;object-fit:contain}
+.empty b{font-size:16px;font-weight:500}
+.empty span{font-size:12px;color:var(--ink-48);line-height:1.35}
+
+/* ---------- home ---------- */
+.addr{display:flex;align-items:center;gap:4px;padding:12px 0;width:100%;text-align:left}
+.addr div{flex:1;display:flex;flex-direction:column;font-size:14px;color:var(--sec);line-height:1.2}
+.addr b{color:#000;font-weight:600}
+.banner{position:relative}
+.banner img{width:100%;aspect-ratio:358/179;object-fit:cover;border-radius:12px;display:block}
+.dots{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px}
+.dots i{width:16px;height:4px;border-radius:100px;background:#C4C4C4}
+.dots i.on{background:#fff}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.door{display:flex;flex-direction:column;gap:4px;text-align:left}
+.door img{width:100%;aspect-ratio:173/97.4;object-fit:cover;border-radius:12px;display:block}
+.colc{width:150px;display:flex;flex-direction:column;gap:4px}
+.colc img{width:150px;height:126px;object-fit:cover;border-radius:8px;display:block}
+.event img{width:100%;aspect-ratio:358/201.5;object-fit:cover;border-radius:12px;display:block}
+.cartbar{position:absolute;left:12px;right:12px;bottom:104px;z-index:39;height:52px;border-radius:14px;background:#000;color:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;font-size:15px;font-weight:600;box-shadow:0 12px 24px -12px rgba(0,0,0,.6)}
+.cartbar em{font-style:normal;min-width:24px;height:24px;border-radius:12px;background:rgba(242,241,236,.2);display:grid;place-items:center;font-size:12px;margin-right:8px}
+.cartbar span{display:flex;align-items:center}
+.navwrap{padding:12px 12px 32px}
+.nav{display:flex;align-items:center;padding:4px;border-radius:1000px;background:var(--nav);height:52px}
+.nav>button{flex:1;height:44px;border-radius:1000px;display:grid;place-items:center;color:#000}
+.nav>button[aria-current="true"]{background:#fff}
+.nav>button[aria-current="true"] .i{stroke-width:2.5}
+.nav .scanb{flex:0 0 68px;position:relative;height:44px}
+.nav .scanb span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:68px;border-radius:1000px;background:var(--green);color:var(--gold);display:grid;place-items:center;border:4px solid var(--nav)}
+
+/* ---------- coleção ---------- */
+.chero{position:relative}
+.chero img{width:100%;aspect-ratio:390/250;object-fit:cover;display:block}
+.chero .back-hit{position:absolute;left:16px;top:48px;width:36px;height:36px;border-radius:19px}
+.cbody{display:flex;flex-direction:column;gap:16px;padding:16px 16px 64px}
+.cbody p.intro{margin:0;font-size:14px;line-height:1.55;color:var(--sec);padding-right:8px}
+
+/* ---------- produto ---------- */
+.phero{position:relative;padding:48px 16px 0;display:flex;flex-direction:column;align-items:center;background:var(--wine)}
+.phero.olive{background:var(--olive)}
+.phero>img{position:relative;width:100%;aspect-ratio:1;object-fit:contain}
+.phero .hdr{position:relative;width:100%;min-height:36px}
+.pbody{display:flex;flex-direction:column;gap:16px;padding:16px 16px 120px}
+.from{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-64)}
+.from b{font-weight:500}
+.pblock{display:flex;flex-direction:column;gap:4px}
+.pblock .nm{font-size:16px;font-weight:500}
+.pblock .pr{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.somm{display:flex;flex-direction:column;gap:4px}
+.somm b{font-size:14px;font-weight:500}
+.somm q{font-style:italic;font-size:14px;color:var(--sec);padding-left:12px;border-left:1px solid var(--wine);line-height:1.35}
+.somm q::before,.somm q::after{content:none}
+.desc{margin:0;font-size:14px;color:var(--sec);line-height:1.35;padding-right:8px}
+.field{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.field label{font-size:14px;color:var(--sec)}
+.age{display:flex;gap:6px;font-size:12px;color:var(--ink-64);line-height:1.35}
+
+/* ---------- explorar ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:1000px;background:var(--card);font-size:14px;color:var(--sec)}
+.chip[aria-pressed="true"]{background:var(--green);color:var(--card)}
+.eyeb{font-size:12px;color:var(--sec);text-transform:uppercase}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cats img{width:100%;aspect-ratio:175/70;object-fit:cover;border-radius:8px;display:block}
+.res-h{display:flex;justify-content:space-between;align-items:baseline;padding-top:4px}
+.res-h b{font-size:16px;font-weight:500}
+.res-h span{font-size:12px;color:var(--ink-64)}
+.srow{display:flex;gap:12px;align-items:center;padding:8px 0;text-align:left;width:100%}
+.simg{width:72px;height:72px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;overflow:hidden}
+.simg.e{background:var(--wine)} .simg.b{background:transparent}
+.simg img{width:100%;height:100%;object-fit:contain}
+.srow .mtx b{font-size:14px}
+
+/* ---------- sacola / pedido ---------- */
+.bline{display:flex;gap:12px;align-items:center}
+.bline>img{width:92px;height:92px;object-fit:contain;flex:0 0 auto}
+.bline .mtx{gap:4px}
+.bline .mtx b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bline .mtx span{font-size:12px;color:var(--ink-64);font-variant-numeric:tabular-nums}
+.pay-row{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--line)}
+.pay-row .rt{flex:1;display:flex;flex-direction:column;gap:2px}
+.pay-row .rt b{font-size:14px;font-weight:500}
+.pay-row .rt small{font-size:12px;color:var(--ink-64)}
+.pay-row u{font-size:12px;font-weight:600;padding:2px 6px}
+.cvv{display:flex;gap:8px}
+.cvv .inp{border-radius:12px}
+.cvv .inp:first-child{width:82px;flex:0 0 auto}
+.cvv .inp:last-child{flex:1}
+.eta-t{display:flex;flex-direction:column}
+.eta-t span{font-size:12px;color:var(--ink-64)}
+.eta-t b{font-size:18px;font-weight:600}
+.tl{display:flex;flex-direction:column;gap:4px}
+.tli{display:flex;gap:12px;align-items:center}
+.tli .tc{width:38px;display:flex;flex-direction:column;align-items:center;gap:2px;flex:0 0 auto;font-size:12px;color:var(--ink-64);font-variant-numeric:tabular-nums}
+.tdot{width:28px;height:28px;border-radius:1000px;display:grid;place-items:center}
+.tdot.ok{background:var(--ok);color:rgba(255,255,255,.92)}
+.tdot.now{background:#CBCBCB;box-shadow:inset 0 0 0 8px #CBCBCB}
+.tdot.now::after{content:"";width:12px;height:12px;border-radius:50%;background:#fff;animation:pulse 1.6s ease-in-out infinite}
+.tdot.off{border:1px solid #CBCBCB}
+@keyframes pulse{50%{transform:scale(.6);opacity:.6}}
+.tli .tx{flex:1;display:flex;flex-direction:column;gap:2px}
+.tli .tx b{font-size:14px;font-weight:500}
+.tli .tx span{font-size:12px;color:var(--ink-64)}
+.tline{width:38px;display:flex;justify-content:center}
+.tline i{width:1px;height:12px;border-radius:1000px;background:rgba(0,0,0,.24)}
+
+/* ---------- scan ---------- */
+.scan{position:absolute;inset:0;background:#151512;color:#fff}
+.scan .hdr{padding:48px 16px 0}
+.scan .hdr-t span{max-width:262px}
+.cam{position:absolute;left:0;right:0;top:120px;bottom:0;display:grid;place-items:center;align-content:start;padding-top:200px}
+.qr{width:150px;height:150px;border-radius:10px;background:#F4F2EC;padding:12px;box-shadow:0 20px 30px -10px #000}
+.qr svg{width:100%;height:100%;display:block}
+.corner{position:absolute;width:36px;height:36px;border:0 solid #fff;top:312px}
+.cam .corner{position:absolute}
+.scan .frame{position:absolute;left:50%;top:312px;width:220px;height:220px;transform:translateX(-50%)}
+.scan .frame i{position:absolute;width:36px;height:36px;border:0 solid #fff}
+.scan .frame i:nth-child(1){left:0;top:0;border-top-width:3px;border-left-width:3px;border-top-left-radius:12px}
+.scan .frame i:nth-child(2){right:0;top:0;border-top-width:3px;border-right-width:3px;border-top-right-radius:12px}
+.scan .frame i:nth-child(3){left:0;bottom:0;border-bottom-width:3px;border-left-width:3px;border-bottom-left-radius:12px}
+.scan .frame i:nth-child(4){right:0;bottom:0;border-bottom-width:3px;border-right-width:3px;border-bottom-right-radius:12px}
+.scan .frame .laser{position:absolute;left:14px;right:14px;height:2px;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:sweep 1.8s ease-in-out infinite}
+.scan .frame.found i{border-color:#7FC39A} .scan .frame.found .laser{display:none}
+@keyframes sweep{0%,100%{top:14px}50%{top:204px}}
+.qrpos{position:absolute;left:50%;top:347px;transform:translateX(-50%)}
+.scan .cap{position:absolute;left:0;right:0;top:560px;text-align:center;font-size:13px;color:rgba(255,255,255,.72)}
+.sheet{background:#fff;color:#000;border-radius:16px 16px 0 0;padding:16px 16px 32px;display:flex;flex-direction:column;gap:16px}
+.found{display:flex;gap:12px;align-items:center}
+.found .okc{width:32px;height:32px;border-radius:1000px;background:var(--ok);color:rgba(255,255,255,.92);display:grid;place-items:center;flex:0 0 auto}
+.found div{display:flex;flex-direction:column;gap:2px}
+.found small{font-size:12px;color:var(--ink-64);text-transform:uppercase}
+.found b{font-size:16px;font-weight:600}
+.who{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.av{width:36px;height:36px;border-radius:100px;background:var(--wine);color:var(--bg);display:grid;place-items:center;font-weight:600;flex:0 0 auto}
+.who div{display:flex;flex-direction:column;gap:2px}
+.who b{font-size:14px;font-weight:500}
+.who span{font-size:12px;color:var(--ink-64);line-height:1.35}
+.sheet .lead{margin:0;font-size:14px;color:var(--ink-64);line-height:1.35}
+
+/* ---------- comanda ---------- */
+.olive{position:sticky;top:0;z-index:20;background:var(--olive);color:#fff;padding-top:48px;overflow:hidden}
+.olive .glow{background:radial-gradient(circle at 30% 10%,rgba(255,255,255,.14),rgba(255,255,255,0) 60%)}
+.olive .hdr{position:relative;padding:0 16px}
+.call{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:rgba(255,255,255,.64);text-align:center;line-height:1.2;width:50px}
+.call span{width:36px;height:36px;border-radius:19px;background:rgba(0,0,0,.12);display:grid;place-items:center;color:#fff}
+.strip{position:relative;margin:8px 16px 0;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;gap:10px;text-align:left;width:calc(100% - 32px)}
+.strip .tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.strip b{font-size:14px;font-weight:500}
+.strip small{font-size:12px;color:rgba(255,255,255,.64)}
+.strip em{font-style:normal;font-size:12px;font-weight:600;display:flex;align-items:center;gap:2px}
+.otabs{position:relative;display:flex;margin-top:8px}
+.otab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;font-size:14px;color:rgba(242,241,236,.64);border-bottom:2px solid transparent;text-align:center}
+.otab[aria-current="true"]{color:#F2F1EC;font-weight:500;border-color:#F2F1EC}
+.otab em{font-style:normal;font-size:11px;font-weight:600;min-width:18px;height:18px;border-radius:9px;background:#F2F1EC;color:var(--olive);display:grid;place-items:center;padding:0 5px}
+.mpad{display:flex;flex-direction:column;gap:16px;padding:16px 0 140px}
+.mpad>.px{padding:0 16px}
+.ctabs{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--div)}
+.ctabs::-webkit-scrollbar{display:none}
+.ctab{flex:0 0 auto;padding:8px 12px;font-size:14px;color:var(--sec);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ctab[aria-current="true"]{color:var(--green);font-weight:500;border-color:var(--green)}
+.forchip{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;margin-top:2px;font-size:12px;font-weight:500;padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--olive)}
+.forchip[aria-pressed="true"]{background:var(--olive);border-color:var(--olive);color:var(--bg)}
+.ghost{display:flex;align-items:center;justify-content:center;gap:6px;height:40px;border-radius:12px;border:1px dashed var(--line);font-size:13px;font-weight:500;width:100%}
+.note{display:flex;gap:8px;font-size:12px;color:var(--ink-64);line-height:1.4;padding:0 4px}
+.pill{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;white-space:nowrap}
+.pill.wine{background:#F1E4E6;color:var(--wine)} .pill.ok{background:#E3EFE6;color:#2F6B3F}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.steps i{height:4px;border-radius:2px;background:rgba(0,0,0,.1)}
+.steps i.on{background:var(--olive)}
+.stl{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:11px;color:var(--ink-64);margin-top:-8px}
+.stl .cur{color:#000;font-weight:600}
+.li{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.li span{color:var(--ink-80)} .li small{color:var(--ink-64);font-size:12px}
+.li b{font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.eta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--olive);font-weight:500}
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:45;display:flex;align-items:flex-end}
+.backdrop .sheet{width:100%;padding-top:10px}
+.grab{width:40px;height:4px;border-radius:2px;background:rgba(0,0,0,.18);align-self:center}
+.sh-t{display:flex;flex-direction:column;gap:4px}
+.sh-t b{font-size:16px;font-weight:600}
+.sh-t span{font-size:14px;color:var(--ink-64);line-height:1.35}
+.opt{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--div);width:100%;text-align:left;font-size:14px;font-weight:500}
+.opt .ricon{background:rgba(0,0,0,.04)}
+.opt span:nth-child(2){flex:1}
+.paid{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-top:16px}
+.paid .okbig{width:72px;height:72px;border-radius:1000px;background:var(--ok);color:#fff;display:grid;place-items:center}
+.paid b{font-size:18px;font-weight:600}
+.paid span{font-size:14px;color:var(--ink-64)}
+.stars{display:flex;justify-content:space-between;padding:0 8px}
+.stars button{color:var(--line)}
+.stars button.on{color:var(--gold)}
+.stars button.on .i{fill:currentColor}
+.club{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--olive)}
+.ib{display:flex;gap:12px}
+.ib div{display:flex;flex-direction:column;gap:4px}
+.ib b{font-size:14px;font-weight:500}
+.ib span{font-size:12px;color:var(--ink-64);line-height:1.4}
+
+/* ---------- perfil ---------- */
+.prof{display:flex;gap:12px;align-items:center}
+.avatar{width:56px;height:56px;border-radius:1000px;background:var(--wine);color:var(--gold);display:grid;place-items:center;font-size:20px;font-weight:600}
+.prof b{display:block;font-size:16px;font-weight:600}
+.prof span{font-size:12px;color:var(--ink-64)}
+.clubcard{position:relative;overflow:hidden;border-radius:16px;background:var(--green);color:#fff;padding:16px;display:flex;flex-direction:column;gap:12px}
+.clubcard .mk{position:absolute;right:-16px;bottom:-24px;height:150px;width:auto;color:var(--gold);opacity:.12}
+.clubcard small{font-size:12px;text-transform:uppercase;color:var(--gold)}
+.clubcard .lvl{font-size:28px;font-weight:600}
+.prog{height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
+.prog i{display:block;height:100%;width:61%;background:var(--gold)}
+.clubcard .pr{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums}
+.perks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.perk{background:rgba(255,255,255,.08);border-radius:12px;padding:8px;font-size:12px;line-height:1.3;color:rgba(255,255,255,.88)}
+.perk b{display:block;font-size:16px;color:var(--gold);margin-bottom:2px}
+.menu-l{display:flex;flex-direction:column}
+.menu-l button{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--div);font-size:14px;width:100%}
+
+@media (max-width:960px){
+  .stage{grid-template-columns:1fr;gap:16px;align-items:start}
+  .rail{display:none}
+  .phone{--ph:min(844px,calc(100dvh - 100px))}
+  .mini{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;max-width:430px;width:100%;margin:0 auto}
+  .mini .mt{text-align:center;font-size:13px;color:var(--stage-mute)}
+  .mini .mt b{display:block;color:var(--stage-ink);font-size:14px;font-weight:500}
+}
+@media (max-width:520px){
+  .stage{padding-block:12px}
+  .phone{height:calc(100dvh - 90px);min-height:560px;width:100%;padding:0;border-radius:26px;box-shadow:none}
+  .screen{border-radius:26px}
+  .island{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- ajustes da reconstrução ---------- */
+#ov{position:absolute;inset:0;pointer-events:none;z-index:44}
+#ov>*{pointer-events:auto}
+.screen.on-color.scrolled .sbar{background:var(--bg);color:#000}
+.screen.on-color .sbar{transition:background .2s,color .2s}
+.mrow{border-radius:0}
+.mrow+.mrow{border-radius:0}
+.empty span{color:var(--ink-64)}
+.scan .frame{position:absolute;left:50%;top:44%;width:220px;height:220px;transform:translate(-50%,-50%);display:grid;place-items:center;cursor:pointer}
+.scan .frame .qr{position:relative}
+.scan .cap{top:calc(44% + 132px)}
+.hello{position:relative;display:flex;flex-direction:column;gap:4px;padding:8px 16px 0;color:rgba(255,255,255,.72)}
+.hello span{font-size:16px} .hello b{color:#fff;font-weight:600}
+.hello small{font-size:12px}
+.totals{position:relative;margin:8px 16px 0;padding:8px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.totals div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.totals small{font-size:12px;color:rgba(255,255,255,.72)}
+.totals b{font-size:18px;font-weight:600;color:#fff;font-variant-numeric:tabular-nums}
+.olive .hdr{min-height:66px}
+.lh{display:flex;flex-direction:column;gap:12px;padding:0 16px}
+.mpad section{display:flex;flex-direction:column;gap:4px}
+.btn.olive-b{background:var(--olive);color:#F2F1EC;height:48px;font-size:15px;border-radius:12px}
+.btn svg{flex:0 0 auto}
+.mimg .pill-step{bottom:4px;box-shadow:0 4px 12px -4px rgba(0,0,0,.3)}
+.toggle{width:40px;height:24px;border-radius:12px;background:var(--line);position:relative;flex:0 0 auto}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle[aria-pressed="true"]{background:var(--olive)}
+.toggle[aria-pressed="true"]::after{left:19px}
+.li span small{font-size:12px}
+.cvv .inp{position:relative}
+.cvv select{padding-right:4px}
+.ricon .i{display:block}
+.eyeb{margin-bottom:-8px}
+.ctabs{padding:0 4px}
+.dock.clear .btn{flex:1}
+.empty{padding:24px 24px 16px}
+.mpad>section+section{margin-top:16px}
+.mrow{cursor:pointer}
+.px{padding:0 16px}
+
+/* ================= Por baixo dos panos ================= */
+.arch-btn{display:grid;grid-template-columns:40px 1fr 18px;gap:12px;align-items:center;text-align:left;padding:12px;border-radius:14px;background:linear-gradient(135deg,#1F3A2E,#15221C);border:1px solid #2F4A3D;color:var(--stage-ink)}
+.arch-btn>span:first-child{width:40px;height:40px;border-radius:12px;background:rgba(217,191,146,.14);color:var(--gold);display:grid;place-items:center}
+.arch-btn b{display:block;font-size:15px;font-weight:600}
+.arch-btn small{font-size:12px;color:var(--stage-mute);line-height:1.35}
+.arch-btn:hover{border-color:var(--gold)}
+.mini-arch{grid-column:1/-1;justify-self:center;display:inline-flex;align-items:center;gap:6px}
+.arch{display:none;--ok:#7FC39A;--adj:#D9BF92;--new:#E7A0AC;max-width:1240px;margin:0 auto;padding-block:24px 48px}
+body.show-arch .stage{display:none}
+body.show-arch .arch{display:block}
+.a-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.a-top .rbtn{display:inline-flex;align-items:center;gap:6px}
+.a-brand .logo{height:32px;width:88px;color:var(--stage-ink)}
+.a-intro{margin:32px 0 24px;max-width:760px}
+.a-eye{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.a-intro h1{margin:8px 0 12px;font-size:clamp(26px,3.4vw,38px);line-height:1.15;font-weight:600;letter-spacing:-.01em}
+.a-intro p{margin:0;font-size:16px;line-height:1.6;color:#C4C9C3;max-width:64ch}
+.a-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.kpi{border:1px solid var(--stage-line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;background:var(--stage-2)}
+.kpi b{font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--stage-mute);line-height:1.4}
+.kpi:nth-child(1) b{color:var(--ok)} .kpi:nth-child(2) b{color:var(--adj)} .kpi:nth-child(3) b{color:var(--new)}
+.a-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+.a-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px}
+.lg{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--stage-mute)}
+.st-ok{--c:var(--ok)} .st-adj{--c:var(--adj)} .st-new{--c:var(--new)}
+.an-st{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);flex:0 0 auto}
+.a-board{display:flex;flex-direction:column;border:1px solid var(--stage-line);border-radius:20px;padding:20px;background:#111C17}
+.band{display:flex;flex-direction:column;gap:10px}
+.band-l{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--stage-mute)}
+.wire{position:relative;height:44px;display:grid;place-items:center}
+.wire::before{content:"";position:absolute;top:4px;bottom:4px;left:50%;border-left:1.5px dashed #3A5045}
+.wire span{position:relative;font-size:11px;color:var(--stage-mute);background:#111C17;padding:2px 10px;border:1px solid var(--stage-line);border-radius:999px}
+.people{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.groups{display:grid;grid-template-columns:7fr 4fr;gap:12px}
+.grp{border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.grp-mm{background:rgba(127,195,154,.06);border:1px solid rgba(127,195,154,.22)}
+.grp-sp{background:rgba(231,160,172,.06);border:1px solid rgba(231,160,172,.22)}
+.grp h4{margin:0;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-ink)}
+.grp-mm h4{color:var(--ok)} .grp-sp h4{color:var(--new)}
+.grp-mm .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.grp-sp .grid{display:grid;grid-template-columns:1fr;gap:8px}
+.an{display:grid;grid-template-columns:36px 1fr 24px;gap:10px;align-items:center;text-align:left;padding:10px;border-radius:12px;background:var(--stage-2);border:1px solid var(--stage-line);color:var(--stage-ink);transition:opacity .25s,border-color .25s,box-shadow .25s,transform .25s;min-width:0}
+.an:hover{border-color:#4A6357}
+.an-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.05);color:var(--c)}
+.an-tx{min-width:0;display:flex;flex-direction:column;gap:2px}
+.an-tx b{font-size:14px;font-weight:600;line-height:1.25}
+.an-tx small{font-size:12px;color:var(--stage-mute);line-height:1.3}
+.an-b{grid-template-columns:44px 1fr 24px;padding:14px;background:linear-gradient(90deg,rgba(231,160,172,.08),var(--stage-2))}
+.an-b .an-ic{width:44px;height:44px}
+.an[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.arch.tracing .an{opacity:.28}
+.arch.tracing .an.hit{opacity:1;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 10px 30px -12px rgba(217,191,146,.45);transform:translateY(-1px)}
+.a-side{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px}
+.a-card{border:1px solid var(--stage-line);border-radius:16px;padding:16px;background:var(--stage-2);display:flex;flex-direction:column;gap:12px}
+.a-card h3{margin:0;font-size:15px;font-weight:600}
+.ftabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ftabs button{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;border-radius:10px;border:1px solid var(--stage-line);font-size:13px;color:var(--stage-ink)}
+.ftabs button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#1A1A14;font-weight:600}
+.fsteps{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.fsteps button{display:grid;grid-template-columns:24px 1fr;gap:10px;text-align:left;padding:7px 8px;border-radius:10px;font-size:13px;line-height:1.45;color:var(--stage-mute);width:100%}
+.fsteps button span{width:22px;height:22px;border-radius:11px;border:1px solid var(--stage-line);display:grid;place-items:center;font-size:11px;font-variant-numeric:tabular-nums;margin-top:1px}
+.fsteps button:hover{background:rgba(255,255,255,.03)}
+.fsteps button.done{color:#AEB6B0}
+.fsteps button.done span{background:rgba(127,195,154,.16);border-color:transparent;color:var(--ok)}
+.fsteps button.cur{background:rgba(217,191,146,.1);color:var(--stage-ink)}
+.fsteps button.cur span{background:var(--gold);border-color:var(--gold);color:#1A1A14;font-weight:600}
+.fctl{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.dt-h{display:flex;gap:12px;align-items:center}
+.dt-h .an-ic{width:44px;height:44px}
+.dt-h b{display:block;font-size:16px;font-weight:600}
+.dt-h small{font-size:12px;color:var(--stage-mute)}
+.pill-st{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+#a-detail p{margin:0;font-size:14px;line-height:1.55;color:#C4C9C3}
+#a-detail h5{margin:4px 0 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--stage-mute);font-weight:500}
+#a-detail ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+#a-detail li{display:flex;gap:8px;font-size:13px;line-height:1.45}
+#a-detail .ok-l .i{color:var(--ok);margin-top:1px} #a-detail .bd-l .i{color:var(--gold);margin-top:1px}
+.dt-empty{display:flex;gap:10px;align-items:flex-start;color:var(--stage-mute)!important}
+@media (max-width:1100px){.a-main{grid-template-columns:1fr}.a-side{position:static}}
+@media (max-width:760px){.people{grid-template-columns:1fr 1fr}.groups{grid-template-columns:1fr}.a-stats{grid-template-columns:1fr}.grp-mm .grid{grid-template-columns:1fr}.arch{padding-block:16px 32px}.a-board{padding:12px}}
+@media (max-width:960px){.mini{grid-template-columns:auto 1fr auto}}
+@media (max-width:480px){.people{grid-template-columns:1fr}}
+.addr div{min-width:0}.addr div span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- assinatura ---------- */
+.subcard{display:block;width:100%;padding:0;border:0;border-radius:16px;overflow:hidden;background:var(--wine);line-height:0}
+.subcard img{display:block;width:100%;height:auto;aspect-ratio:1873/840}
+.shero{position:relative;color:#fff;aspect-ratio:1561/1007;min-height:250px;padding:48px 16px 0;overflow:hidden;background:var(--wine) url(Spazio/assinatura-hero.png) center/cover no-repeat}
+.shero .hdr{position:relative;grid-template-columns:36px 1fr}
+.sh-tx{position:absolute;left:16px;right:16px;bottom:20px;display:flex;flex-direction:column;gap:4px;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.sh-tx h1{margin:0;font-size:34px;line-height:1.1;font-weight:600}
+.sh-lead{margin:0;font-size:14px;line-height:1.55;color:var(--sec);padding-right:8px}
+.eyeb.gold{display:flex;align-items:center;gap:6px;color:var(--gold);margin:0}
+.eyeb.gold .i{width:12px;height:16px}
+.box-t{font-size:20px;font-weight:600;margin-top:-8px}
+.bline.sm>img,.bline.sm .tb{width:64px;height:64px;flex:0 0 auto}
+.bline.sm>img{object-fit:contain}
+.bline.sm .tb{border-radius:12px;overflow:hidden}
+.bline.sm .tb img{width:100%;height:100%;object-fit:cover;object-position:80% 70%;transform:scale(1.5);transform-origin:75% 75%}
+.bline.sm .mtx span{line-height:1.35}
+.pass{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stamp{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:12px 6px;border-radius:12px;border:1px dashed var(--line);color:var(--ink-48)}
+.stamp span{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.04)}
+.stamp b{font-size:12px;font-weight:600;color:var(--ink-64);line-height:1.2}
+.stamp small{font-size:11px}
+.stamp.on{border:1px solid var(--wine);background:#F6ECEE;color:var(--wine)}
+.stamp.on span{background:var(--wine);color:#fff}
+.stamp.on b{color:var(--wine)}
+.radio .rv small{font-size:12px;font-weight:400;color:var(--ink-64)}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 6px;border-radius:999px;background:#F1E4E6;color:var(--wine);margin-left:4px;vertical-align:1px}
+.perk-l{padding:8px 0;border-bottom:1px solid var(--div)}
+.perk-l:last-child{border-bottom:0}
+.perk-l>.i{color:var(--wine);margin-top:1px}
+.subon{background:#E9F1EB}
+.subon .i{color:var(--ok)}
+.bline.sm .tb img{object-position:100% 100%;transform:scale(1.9);transform-origin:88% 88%}
+
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="rail" aria-label="Roteiro da apresentação">
+    <div class="rail-brand"><svg class="logo" viewBox="1.5 2 77 28" fill="currentColor" aria-hidden="true"><path d="M44.9864 2.53162C45.698 2.78081 45.9323 3.31928 45.9128 4.02399C45.8828 5.11913 45.402 6.0428 44.8078 6.9198C43.8549 8.32541 42.561 9.3966 41.2743 10.4758C40.3644 11.2389 39.4715 12.0219 38.5778 12.8039C38.4761 12.8927 38.4116 13.0273 38.341 13.1473C38.1652 13.446 37.8618 13.5837 37.609 13.4719C37.3788 13.3701 37.2352 13.0225 37.4151 12.739C37.6589 12.3547 37.9577 11.9815 38.3062 11.6908C39.5175 10.6802 40.7788 9.72875 41.9863 8.71369C43.2007 7.69267 44.1989 6.48752 44.8167 5.00893C44.9398 4.71461 45.0289 4.39089 45.0537 4.07457C45.0984 3.50412 44.7198 3.27055 44.1877 3.50669C43.6167 3.7602 43.1767 4.18621 42.8146 4.6704C42.3764 5.25637 42.0145 5.89857 41.5903 6.49575C41.472 6.66218 41.2608 6.83849 41.0731 6.86244C40.8019 6.89719 40.6641 6.63216 40.6198 6.39397C40.557 6.05545 40.5423 5.70798 40.5087 5.36421C40.46 4.8647 40.3465 4.38986 40.077 3.95264C39.8571 3.59592 39.5296 3.51738 39.1596 3.53887C38.804 3.55953 38.6339 3.81098 38.5425 4.12031C38.2977 4.9491 38.4797 5.7529 38.7334 6.5382C38.9368 7.16745 39.2374 7.75167 39.7313 8.22209C39.9903 8.46892 39.9091 8.7837 39.5704 8.91354C39.2789 9.02528 39.0183 8.97429 38.8128 8.7213C37.8942 7.59038 37.3075 6.34494 37.5069 4.84445C37.6171 4.017 37.9084 3.27251 38.6358 2.7769C38.7852 2.67502 38.9616 2.61232 39.1256 2.53162H39.8419C40.7958 2.96873 41.1681 3.82692 41.4447 4.81021C41.5324 4.68654 41.5859 4.61057 41.64 4.53491C42.1734 3.78723 42.7643 3.10114 43.6624 2.77382C43.9439 2.67132 44.2408 2.61108 44.5306 2.53162H44.9864Z"/><path d="M56.8996 14.9777C56.8907 14.9974 56.8817 15.017 56.8727 15.0366C56.7342 15.055 56.5924 15.0608 56.4575 15.0942C56.1091 15.1803 55.8899 15.4213 55.8825 15.7075C55.8757 15.9668 56.0852 16.1902 56.4459 16.2872C56.9775 16.4302 57.476 16.3274 57.9334 16.0403C58.2622 15.8339 58.2666 15.5241 57.9169 15.344C57.5993 15.1806 57.2404 15.0967 56.8996 14.9777Z"/><path d="M30.1486 20.0373C30.8452 20.0843 32.5304 19.203 32.7125 18.6923C31.6827 18.8124 30.9462 19.3901 30.1486 20.0373ZM40.7012 26.7746C41.9614 26.0082 42.994 25.0191 43.7056 23.7182C42.5971 24.6313 41.4534 25.5094 40.7012 26.7746ZM65.2738 18.7669C64.6508 18.6785 62.8471 20.1981 62.7215 20.7451C63.3326 20.8683 64.9466 19.6259 65.2738 18.7669ZM78 18.3678C77.7382 18.6791 77.3889 18.5809 77.0608 18.5604C75.9794 18.4931 74.8982 18.3554 73.8176 18.3612C71.6051 18.3731 69.4414 18.7445 67.307 19.3388C66.6162 19.5313 66.0854 19.8101 65.6091 20.3634C64.9638 21.113 64.0823 21.5629 63.1003 21.77C62.6145 21.8725 62.1762 21.7675 61.8118 21.4074C61.5346 21.1336 61.457 20.8259 61.6073 20.4628C61.8362 19.9099 62.3054 19.5638 62.7245 19.1765C62.9836 18.9371 63.2594 18.7156 63.5051 18.4201C63.2452 18.4541 62.983 18.4761 62.7257 18.5242C60.7059 18.9018 58.7584 19.5242 56.8284 20.2186C55.8745 20.5619 54.8856 20.809 53.9118 21.0967C53.8508 21.1146 53.7825 21.1102 53.7175 21.1126C52.9105 21.1416 52.5567 20.6679 52.8254 19.9058C52.9035 19.684 53.012 19.4731 53.1342 19.1941C52.8741 19.2406 52.6491 19.2757 52.4263 19.3214C50.2612 19.7652 48.3092 20.7118 46.4376 21.8466C46.0394 22.0881 45.6406 22.3295 45.2526 22.5868C45.1719 22.6403 45.077 22.7745 45.0911 22.8529C45.251 23.7312 44.8887 24.4565 44.3813 25.1043C43.2133 26.5955 41.7186 27.6902 40.0188 28.5125C39.651 28.6905 39.1022 28.2552 39.113 27.8036C39.1281 27.1801 39.376 26.6305 39.6727 26.0962C40.4342 24.7243 41.6713 23.8175 42.8554 22.8597C43.1307 22.6369 43.4238 22.4361 43.7287 22.2106C43.4631 21.8032 43.1059 21.5613 42.6637 21.5034C42.161 21.4375 41.6463 21.4639 41.1427 21.4026C40.8782 21.3705 40.6073 21.2683 40.3773 21.1332C40.2821 21.0774 40.2346 20.8416 40.2638 20.7093C40.2834 20.6213 40.4698 20.5375 40.5944 20.5103C41.5354 20.3042 42.4906 20.1535 43.4181 19.9001C43.9188 19.7634 44.3743 19.4608 44.848 19.2282C44.9214 19.1921 44.9824 19.1309 45.0491 19.0811C45.0342 19.0399 45.0192 18.9986 45.0043 18.9573C43.9027 18.9399 42.7993 18.8755 41.6999 18.9155C39.7713 18.9856 37.9461 19.5476 36.1532 20.2162C35.4023 20.4963 34.6627 20.8059 33.9134 21.0903C33.0967 21.4003 32.5897 21.2621 32.0596 20.6126C31.6053 20.7575 31.161 20.9268 30.7022 21.0352C30.423 21.1012 30.1191 21.1043 29.8306 21.0811C29.0593 21.0193 28.7137 20.3631 29.0706 19.6753C29.3593 19.1188 29.8471 18.7871 30.3883 18.516C30.4656 18.4773 30.5468 18.4461 30.6242 18.4076C30.6397 18.3998 30.6458 18.374 30.6942 18.2939C30.1986 18.3212 29.7412 18.328 29.2879 18.3747C27.4234 18.5666 25.6193 19.0459 23.8392 19.6004C22.6326 19.976 21.4684 20.4851 20.2675 20.8816C19.5713 21.1114 18.8423 21.2457 18.1239 21.4043C17.8206 21.4712 17.3987 21.1805 17.3064 20.8851C17.2427 20.681 17.3418 20.5823 17.5236 20.5252C18.7493 20.1403 19.9846 19.7816 21.1947 19.3526C21.5986 19.2094 21.9463 18.8967 22.3009 18.636C22.3955 18.5665 22.4205 18.4031 22.4774 18.2828C22.4578 18.252 22.4383 18.2213 22.4187 18.1904C22.0845 18.2562 21.7437 18.2986 21.4172 18.3914C18.5438 19.2087 16.1197 20.8059 13.8408 22.6796C12.394 23.8692 11.2965 25.3538 10.1258 26.7822C9.42649 27.6356 8.71116 28.4761 7.99778 29.318C7.81583 29.5327 7.52804 29.5134 7.21158 29.2862C6.91802 29.0756 6.83942 28.8636 7.03324 28.6045C7.9328 27.4019 8.75355 26.1219 9.78081 25.0372C11.389 23.3389 12.7532 21.4665 14.1197 19.5873C14.2978 19.3423 14.4675 19.0911 14.6526 18.8516C14.8605 18.5826 14.9786 18.3035 14.9028 17.9504C14.8585 17.7436 15.0722 17.6165 15.3261 17.6723C15.7466 17.7648 16.0432 18.2947 15.8949 18.791C15.7978 19.1161 15.6107 19.415 15.4571 19.7224C15.3974 19.8419 15.319 19.9521 15.221 20.1128C15.991 19.6705 16.6878 19.2377 17.4135 18.8602C18.6854 18.1987 20.0068 17.6513 21.4226 17.3748C21.7255 17.3155 22.0506 17.3077 22.3577 17.3431C23.0481 17.4227 23.451 17.8358 23.6327 18.605C24.173 18.4577 24.7122 18.3089 25.2525 18.1637C27.0711 17.6753 28.9101 17.2882 30.8046 17.418C31.4636 17.4631 32.1163 17.6718 32.7591 17.8516C33.1047 17.9484 33.3114 18.2466 33.4803 18.5626C33.5446 18.6832 33.6581 18.7925 33.7749 18.8675C34.0253 19.0283 34.0539 19.2006 33.8383 19.4156C33.6141 19.6395 33.3908 19.8645 33.1671 20.089C33.1878 20.1185 33.2087 20.1481 33.2294 20.1776C33.3789 20.1325 33.5337 20.1 33.6771 20.0401C35.2073 19.4016 36.7416 18.7772 38.3652 18.4031C39.5769 18.1237 40.8052 17.974 42.0456 18.0247C43.3349 18.0775 44.622 18.1865 45.9089 18.2869C46.4412 18.3284 46.6494 18.7244 46.436 19.2029C46.1017 19.9531 45.4141 20.2625 44.7287 20.5648C44.366 20.7248 43.9793 20.8307 43.5888 20.9661C43.9109 21.2097 44.2098 21.4359 44.5024 21.6574C45.4414 21.1223 46.3721 20.5698 47.3234 20.0546C49.2999 18.9842 51.4279 18.3768 53.6471 18.0691C54.0475 18.0137 54.4475 18.0132 54.816 18.2361C55.1414 18.4329 55.172 18.6635 54.9108 18.9413C54.6445 19.2245 54.387 19.5162 54.1355 19.8123C54.0615 19.8994 54.021 20.0146 53.9139 20.2106C54.1986 20.145 54.4048 20.116 54.5984 20.05C56.0029 19.5712 57.4025 19.078 58.8082 18.6027C60.2366 18.1197 61.683 17.7028 63.1846 17.5065C63.6754 17.4422 64.1575 17.3906 64.5591 17.7805C64.6247 17.8443 64.7303 17.8674 64.7999 17.9008C64.9066 17.7351 64.9728 17.5314 65.1128 17.442C65.2624 17.3464 65.4827 17.3235 65.6697 17.3306C66.1755 17.3497 66.6828 17.7575 66.7794 18.1888C66.7955 18.2611 66.801 18.3356 66.8126 18.4179C67.4652 18.2618 68.0997 18.0904 68.7424 17.9599C71.008 17.4999 73.2935 17.3132 75.6031 17.51C76.0786 17.5506 76.5532 17.6029 77.028 17.6505C77.4063 17.6884 77.7474 17.805 78 18.1081V18.3678Z"/><path d="M6.82153 17.1288C8.45251 17.1548 9.96014 17.4838 11.3388 18.3041C11.3761 18.3262 11.4259 18.3378 11.4503 18.3692C11.5426 18.4886 11.6269 18.6139 11.7143 18.737C11.579 18.7461 11.4318 18.7947 11.3105 18.7582C10.0061 18.3654 8.68171 18.089 7.31396 18.0932C6.24513 18.0965 5.18961 18.1999 4.22001 18.7123C4.21052 18.7174 4.20072 18.7221 4.19144 18.7279C3.78266 18.9787 3.33551 19.2159 3.32736 19.7747C3.3187 20.365 3.6758 20.7572 4.14781 21.0503C4.62724 21.3481 5.15536 21.5026 5.72299 21.4929C7.82145 21.4572 9.70423 20.8196 11.319 19.4634C11.5144 19.2993 11.6802 19.0877 11.8199 18.8723C12.2185 18.2579 12.0415 17.6343 11.3532 17.365C10.679 17.1015 9.97262 16.9216 9.28823 16.6827C8.63591 16.4551 7.98257 16.224 7.35006 15.9483C6.66804 15.6509 6.51363 14.9233 6.96954 14.3409C7.84878 13.2177 9.68782 12.7183 11.0029 13.2543C11.4301 13.4285 11.7747 13.7069 11.9028 14.1696C11.9643 14.3916 12.0453 14.7241 11.769 14.7867C11.5801 14.8295 11.2532 14.6602 11.121 14.4858C10.7288 13.9683 10.4925 13.8486 9.87071 14.0316C9.25429 14.213 8.64984 14.4271 8.16483 14.8672C8.04714 14.974 7.90335 15.1657 7.92924 15.2843C7.95493 15.4024 8.16617 15.5197 8.3178 15.5648C9.30236 15.8587 10.3015 16.1062 11.2768 16.4264C11.6682 16.5548 12.0443 16.7875 12.3706 17.0441C13.4363 17.8819 13.5136 19.1021 12.5923 20.0946C11.9295 20.8087 11.0722 21.236 10.2112 21.6451C8.57341 22.423 6.85773 22.7682 5.0583 22.3798C3.93687 22.1378 2.9453 21.6295 2.34033 20.5973C1.65357 19.4258 2.02604 18.3736 3.27837 17.8177C4.42105 17.3106 5.62944 17.1613 6.82153 17.1288Z"/><path d="M56.8996 14.9777C57.2404 15.0967 57.5993 15.1806 57.9169 15.344C58.2666 15.5241 58.2622 15.8339 57.9334 16.0403C57.476 16.3274 56.9775 16.4302 56.4459 16.2872C56.0852 16.1902 55.8757 15.9668 55.8825 15.7075C55.8899 15.4213 56.1091 15.1803 56.4575 15.0942C56.5924 15.0608 56.7342 15.055 56.8727 15.0366C56.8817 15.017 56.8907 14.9974 56.8996 14.9777Z"/></svg><span>Proposta de app · protótipo navegável</span></div>
+    <div class="journeys" id="journeys"></div>
+    <div class="talk"><span class="lbl">O que mostrar</span><p id="note"></p><span class="vs" id="vs"></span></div>
+    <div class="rail-ctrl"><button class="rbtn" id="prev">← Anterior</button><button class="rbtn" id="next">Próxima →</button><button class="rbtn" id="reset">Recomeçar</button></div>
+    <span class="hint">Setas ← → do teclado também avançam o roteiro.</span>
+    <button class="arch-btn" data-arch="open"><span><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59" /><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59" /></svg></span><span><b>Por baixo dos panos</b><small>Como o app se apoia na estrutura do Mateus Mais</small></span><svg class="i" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button>
+  </aside>
+  <div class="phone-wrap"><div class="phone"><div class="screen">
+    <div class="island"></div>
+    <div class="sbar"><span id="clock">20:40</span><span class="sb-i"><svg class="i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20h.01" /><path d="M7 20v-4" /><path d="M12 20v-8" /><path d="M17 20V8" /><path d="M22 4v16" /></svg><svg class="i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h.01" /><path d="M2 8.82a15 15 0 0 1 20 0" /><path d="M5 12.859a10 10 0 0 1 14 0" /><path d="M8.5 16.429a5 5 0 0 1 7 0" /></svg><svg class="i" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><line x1="22" x2="22" y1="11" y2="13" /><line x1="6" x2="6" y1="11" y2="13" /><line x1="10" x2="10" y1="11" y2="13" /><line x1="14" x2="14" y1="11" y2="13" /></svg></span></div>
+    <div class="view" id="view"></div>
+    <div id="dock"></div><div id="ov"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div></div></div>
+  <div class="mini"><button class="rbtn" id="mprev" aria-label="Tela anterior">←</button><div class="mt" id="mt"></div><button class="rbtn" id="mnext" aria-label="Próxima tela">→</button><button class="rbtn mini-arch" data-arch="open"><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59" /><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59" /></svg> Por baixo dos panos</button></div>
+</div>
+<section class="arch" id="arch" aria-label="Por baixo dos panos">
+  <header class="a-top"><button class="rbtn" data-arch="close"><svg class="i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg> Voltar ao protótipo</button><span class="a-brand"><svg class="logo" viewBox="1.5 2 77 28" fill="currentColor" aria-hidden="true"><path d="M44.9864 2.53162C45.698 2.78081 45.9323 3.31928 45.9128 4.02399C45.8828 5.11913 45.402 6.0428 44.8078 6.9198C43.8549 8.32541 42.561 9.3966 41.2743 10.4758C40.3644 11.2389 39.4715 12.0219 38.5778 12.8039C38.4761 12.8927 38.4116 13.0273 38.341 13.1473C38.1652 13.446 37.8618 13.5837 37.609 13.4719C37.3788 13.3701 37.2352 13.0225 37.4151 12.739C37.6589 12.3547 37.9577 11.9815 38.3062 11.6908C39.5175 10.6802 40.7788 9.72875 41.9863 8.71369C43.2007 7.69267 44.1989 6.48752 44.8167 5.00893C44.9398 4.71461 45.0289 4.39089 45.0537 4.07457C45.0984 3.50412 44.7198 3.27055 44.1877 3.50669C43.6167 3.7602 43.1767 4.18621 42.8146 4.6704C42.3764 5.25637 42.0145 5.89857 41.5903 6.49575C41.472 6.66218 41.2608 6.83849 41.0731 6.86244C40.8019 6.89719 40.6641 6.63216 40.6198 6.39397C40.557 6.05545 40.5423 5.70798 40.5087 5.36421C40.46 4.8647 40.3465 4.38986 40.077 3.95264C39.8571 3.59592 39.5296 3.51738 39.1596 3.53887C38.804 3.55953 38.6339 3.81098 38.5425 4.12031C38.2977 4.9491 38.4797 5.7529 38.7334 6.5382C38.9368 7.16745 39.2374 7.75167 39.7313 8.22209C39.9903 8.46892 39.9091 8.7837 39.5704 8.91354C39.2789 9.02528 39.0183 8.97429 38.8128 8.7213C37.8942 7.59038 37.3075 6.34494 37.5069 4.84445C37.6171 4.017 37.9084 3.27251 38.6358 2.7769C38.7852 2.67502 38.9616 2.61232 39.1256 2.53162H39.8419C40.7958 2.96873 41.1681 3.82692 41.4447 4.81021C41.5324 4.68654 41.5859 4.61057 41.64 4.53491C42.1734 3.78723 42.7643 3.10114 43.6624 2.77382C43.9439 2.67132 44.2408 2.61108 44.5306 2.53162H44.9864Z"/><path d="M56.8996 14.9777C56.8907 14.9974 56.8817 15.017 56.8727 15.0366C56.7342 15.055 56.5924 15.0608 56.4575 15.0942C56.1091 15.1803 55.8899 15.4213 55.8825 15.7075C55.8757 15.9668 56.0852 16.1902 56.4459 16.2872C56.9775 16.4302 57.476 16.3274 57.9334 16.0403C58.2622 15.8339 58.2666 15.5241 57.9169 15.344C57.5993 15.1806 57.2404 15.0967 56.8996 14.9777Z"/><path d="M30.1486 20.0373C30.8452 20.0843 32.5304 19.203 32.7125 18.6923C31.6827 18.8124 30.9462 19.3901 30.1486 20.0373ZM40.7012 26.7746C41.9614 26.0082 42.994 25.0191 43.7056 23.7182C42.5971 24.6313 41.4534 25.5094 40.7012 26.7746ZM65.2738 18.7669C64.6508 18.6785 62.8471 20.1981 62.7215 20.7451C63.3326 20.8683 64.9466 19.6259 65.2738 18.7669ZM78 18.3678C77.7382 18.6791 77.3889 18.5809 77.0608 18.5604C75.9794 18.4931 74.8982 18.3554 73.8176 18.3612C71.6051 18.3731 69.4414 18.7445 67.307 19.3388C66.6162 19.5313 66.0854 19.8101 65.6091 20.3634C64.9638 21.113 64.0823 21.5629 63.1003 21.77C62.6145 21.8725 62.1762 21.7675 61.8118 21.4074C61.5346 21.1336 61.457 20.8259 61.6073 20.4628C61.8362 19.9099 62.3054 19.5638 62.7245 19.1765C62.9836 18.9371 63.2594 18.7156 63.5051 18.4201C63.2452 18.4541 62.983 18.4761 62.7257 18.5242C60.7059 18.9018 58.7584 19.5242 56.8284 20.2186C55.8745 20.5619 54.8856 20.809 53.9118 21.0967C53.8508 21.1146 53.7825 21.1102 53.7175 21.1126C52.9105 21.1416 52.5567 20.6679 52.8254 19.9058C52.9035 19.684 53.012 19.4731 53.1342 19.1941C52.8741 19.2406 52.6491 19.2757 52.4263 19.3214C50.2612 19.7652 48.3092 20.7118 46.4376 21.8466C46.0394 22.0881 45.6406 22.3295 45.2526 22.5868C45.1719 22.6403 45.077 22.7745 45.0911 22.8529C45.251 23.7312 44.8887 24.4565 44.3813 25.1043C43.2133 26.5955 41.7186 27.6902 40.0188 28.5125C39.651 28.6905 39.1022 28.2552 39.113 27.8036C39.1281 27.1801 39.376 26.6305 39.6727 26.0962C40.4342 24.7243 41.6713 23.8175 42.8554 22.8597C43.1307 22.6369 43.4238 22.4361 43.7287 22.2106C43.4631 21.8032 43.1059 21.5613 42.6637 21.5034C42.161 21.4375 41.6463 21.4639 41.1427 21.4026C40.8782 21.3705 40.6073 21.2683 40.3773 21.1332C40.2821 21.0774 40.2346 20.8416 40.2638 20.7093C40.2834 20.6213 40.4698 20.5375 40.5944 20.5103C41.5354 20.3042 42.4906 20.1535 43.4181 19.9001C43.9188 19.7634 44.3743 19.4608 44.848 19.2282C44.9214 19.1921 44.9824 19.1309 45.0491 19.0811C45.0342 19.0399 45.0192 18.9986 45.0043 18.9573C43.9027 18.9399 42.7993 18.8755 41.6999 18.9155C39.7713 18.9856 37.9461 19.5476 36.1532 20.2162C35.4023 20.4963 34.6627 20.8059 33.9134 21.0903C33.0967 21.4003 32.5897 21.2621 32.0596 20.6126C31.6053 20.7575 31.161 20.9268 30.7022 21.0352C30.423 21.1012 30.1191 21.1043 29.8306 21.0811C29.0593 21.0193 28.7137 20.3631 29.0706 19.6753C29.3593 19.1188 29.8471 18.7871 30.3883 18.516C30.4656 18.4773 30.5468 18.4461 30.6242 18.4076C30.6397 18.3998 30.6458 18.374 30.6942 18.2939C30.1986 18.3212 29.7412 18.328 29.2879 18.3747C27.4234 18.5666 25.6193 19.0459 23.8392 19.6004C22.6326 19.976 21.4684 20.4851 20.2675 20.8816C19.5713 21.1114 18.8423 21.2457 18.1239 21.4043C17.8206 21.4712 17.3987 21.1805 17.3064 20.8851C17.2427 20.681 17.3418 20.5823 17.5236 20.5252C18.7493 20.1403 19.9846 19.7816 21.1947 19.3526C21.5986 19.2094 21.9463 18.8967 22.3009 18.636C22.3955 18.5665 22.4205 18.4031 22.4774 18.2828C22.4578 18.252 22.4383 18.2213 22.4187 18.1904C22.0845 18.2562 21.7437 18.2986 21.4172 18.3914C18.5438 19.2087 16.1197 20.8059 13.8408 22.6796C12.394 23.8692 11.2965 25.3538 10.1258 26.7822C9.42649 27.6356 8.71116 28.4761 7.99778 29.318C7.81583 29.5327 7.52804 29.5134 7.21158 29.2862C6.91802 29.0756 6.83942 28.8636 7.03324 28.6045C7.9328 27.4019 8.75355 26.1219 9.78081 25.0372C11.389 23.3389 12.7532 21.4665 14.1197 19.5873C14.2978 19.3423 14.4675 19.0911 14.6526 18.8516C14.8605 18.5826 14.9786 18.3035 14.9028 17.9504C14.8585 17.7436 15.0722 17.6165 15.3261 17.6723C15.7466 17.7648 16.0432 18.2947 15.8949 18.791C15.7978 19.1161 15.6107 19.415 15.4571 19.7224C15.3974 19.8419 15.319 19.9521 15.221 20.1128C15.991 19.6705 16.6878 19.2377 17.4135 18.8602C18.6854 18.1987 20.0068 17.6513 21.4226 17.3748C21.7255 17.3155 22.0506 17.3077 22.3577 17.3431C23.0481 17.4227 23.451 17.8358 23.6327 18.605C24.173 18.4577 24.7122 18.3089 25.2525 18.1637C27.0711 17.6753 28.9101 17.2882 30.8046 17.418C31.4636 17.4631 32.1163 17.6718 32.7591 17.8516C33.1047 17.9484 33.3114 18.2466 33.4803 18.5626C33.5446 18.6832 33.6581 18.7925 33.7749 18.8675C34.0253 19.0283 34.0539 19.2006 33.8383 19.4156C33.6141 19.6395 33.3908 19.8645 33.1671 20.089C33.1878 20.1185 33.2087 20.1481 33.2294 20.1776C33.3789 20.1325 33.5337 20.1 33.6771 20.0401C35.2073 19.4016 36.7416 18.7772 38.3652 18.4031C39.5769 18.1237 40.8052 17.974 42.0456 18.0247C43.3349 18.0775 44.622 18.1865 45.9089 18.2869C46.4412 18.3284 46.6494 18.7244 46.436 19.2029C46.1017 19.9531 45.4141 20.2625 44.7287 20.5648C44.366 20.7248 43.9793 20.8307 43.5888 20.9661C43.9109 21.2097 44.2098 21.4359 44.5024 21.6574C45.4414 21.1223 46.3721 20.5698 47.3234 20.0546C49.2999 18.9842 51.4279 18.3768 53.6471 18.0691C54.0475 18.0137 54.4475 18.0132 54.816 18.2361C55.1414 18.4329 55.172 18.6635 54.9108 18.9413C54.6445 19.2245 54.387 19.5162 54.1355 19.8123C54.0615 19.8994 54.021 20.0146 53.9139 20.2106C54.1986 20.145 54.4048 20.116 54.5984 20.05C56.0029 19.5712 57.4025 19.078 58.8082 18.6027C60.2366 18.1197 61.683 17.7028 63.1846 17.5065C63.6754 17.4422 64.1575 17.3906 64.5591 17.7805C64.6247 17.8443 64.7303 17.8674 64.7999 17.9008C64.9066 17.7351 64.9728 17.5314 65.1128 17.442C65.2624 17.3464 65.4827 17.3235 65.6697 17.3306C66.1755 17.3497 66.6828 17.7575 66.7794 18.1888C66.7955 18.2611 66.801 18.3356 66.8126 18.4179C67.4652 18.2618 68.0997 18.0904 68.7424 17.9599C71.008 17.4999 73.2935 17.3132 75.6031 17.51C76.0786 17.5506 76.5532 17.6029 77.028 17.6505C77.4063 17.6884 77.7474 17.805 78 18.1081V18.3678Z"/><path d="M6.82153 17.1288C8.45251 17.1548 9.96014 17.4838 11.3388 18.3041C11.3761 18.3262 11.4259 18.3378 11.4503 18.3692C11.5426 18.4886 11.6269 18.6139 11.7143 18.737C11.579 18.7461 11.4318 18.7947 11.3105 18.7582C10.0061 18.3654 8.68171 18.089 7.31396 18.0932C6.24513 18.0965 5.18961 18.1999 4.22001 18.7123C4.21052 18.7174 4.20072 18.7221 4.19144 18.7279C3.78266 18.9787 3.33551 19.2159 3.32736 19.7747C3.3187 20.365 3.6758 20.7572 4.14781 21.0503C4.62724 21.3481 5.15536 21.5026 5.72299 21.4929C7.82145 21.4572 9.70423 20.8196 11.319 19.4634C11.5144 19.2993 11.6802 19.0877 11.8199 18.8723C12.2185 18.2579 12.0415 17.6343 11.3532 17.365C10.679 17.1015 9.97262 16.9216 9.28823 16.6827C8.63591 16.4551 7.98257 16.224 7.35006 15.9483C6.66804 15.6509 6.51363 14.9233 6.96954 14.3409C7.84878 13.2177 9.68782 12.7183 11.0029 13.2543C11.4301 13.4285 11.7747 13.7069 11.9028 14.1696C11.9643 14.3916 12.0453 14.7241 11.769 14.7867C11.5801 14.8295 11.2532 14.6602 11.121 14.4858C10.7288 13.9683 10.4925 13.8486 9.87071 14.0316C9.25429 14.213 8.64984 14.4271 8.16483 14.8672C8.04714 14.974 7.90335 15.1657 7.92924 15.2843C7.95493 15.4024 8.16617 15.5197 8.3178 15.5648C9.30236 15.8587 10.3015 16.1062 11.2768 16.4264C11.6682 16.5548 12.0443 16.7875 12.3706 17.0441C13.4363 17.8819 13.5136 19.1021 12.5923 20.0946C11.9295 20.8087 11.0722 21.236 10.2112 21.6451C8.57341 22.423 6.85773 22.7682 5.0583 22.3798C3.93687 22.1378 2.9453 21.6295 2.34033 20.5973C1.65357 19.4258 2.02604 18.3736 3.27837 17.8177C4.42105 17.3106 5.62944 17.1613 6.82153 17.1288Z"/><path d="M56.8996 14.9777C57.2404 15.0967 57.5993 15.1806 57.9169 15.344C58.2666 15.5241 58.2622 15.8339 57.9334 16.0403C57.476 16.3274 56.9775 16.4302 56.4459 16.2872C56.0852 16.1902 55.8757 15.9668 55.8825 15.7075C55.8899 15.4213 56.1091 15.1803 56.4575 15.0942C56.5924 15.0608 56.7342 15.055 56.8727 15.0366C56.8817 15.017 56.8907 14.9974 56.8996 14.9777Z"/></svg></span></header>
+  <div class="a-intro"><span class="a-eye">Por baixo dos panos</span><h1>Um app novo, sobre uma base que já funciona</h1>
+    <p>O Spazio ganha uma experiência própria, mas aproveita contas, catálogo, checkout, pagamentos, separação e entregas que o Mateus Mais já opera todos os dias. O que é de fato novo está concentrado no Bistrô e no Clube.</p></div>
+  <div class="a-stats" id="a-stats"></div>
+  <div class="a-main">
+    <div class="a-left"><div class="a-legend" id="a-legend"></div><div class="a-board" id="a-board"></div></div>
+    <aside class="a-side"><div class="a-card"><h3>Siga um pedido pelos bastidores</h3><div id="a-flow"></div></div><div class="a-card" id="a-detail" aria-live="polite"></div></aside>
+  </div>
+</section>
+<script>
+/* ================= Spazio · protótipo navegável (telas do Figma) ================= */
+const ICONS = {"arrow-left": "<path d=\"m12 19-7-7 7-7\" /><path d=\"M19 12H5\" />", "banknote": "<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" /><circle cx=\"12\" cy=\"12\" r=\"2\" /><path d=\"M6 12h.01M18 12h.01\" />", "battery-full": "<rect width=\"16\" height=\"10\" x=\"2\" y=\"7\" rx=\"2\" ry=\"2\" /><line x1=\"22\" x2=\"22\" y1=\"11\" y2=\"13\" /><line x1=\"6\" x2=\"6\" y1=\"11\" y2=\"13\" /><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"13\" /><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"13\" />", "bike": "<circle cx=\"18.5\" cy=\"17.5\" r=\"3.5\" /><circle cx=\"5.5\" cy=\"17.5\" r=\"3.5\" /><circle cx=\"15\" cy=\"5\" r=\"1\" /><path d=\"M12 17.5V14l-3-3 4-3 2 3h2\" />", "book-open": "<path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />", "calendar-days": "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"M8 14h.01\" /><path d=\"M12 14h.01\" /><path d=\"M16 14h.01\" /><path d=\"M8 18h.01\" /><path d=\"M12 18h.01\" /><path d=\"M16 18h.01\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "chef-hat": "<path d=\"M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z\" /><path d=\"M6 17h12\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"m9 12 2 2 4-4\" />", "clipboard-list": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /><path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /><path d=\"M12 11h4\" /><path d=\"M12 16h4\" /><path d=\"M8 11h.01\" /><path d=\"M8 16h.01\" />", "credit-card": "<rect width=\"20\" height=\"14\" x=\"2\" y=\"5\" rx=\"2\" /><line x1=\"2\" x2=\"22\" y1=\"10\" y2=\"10\" />", "croissant": "<path d=\"m4.6 13.11 5.79-3.21c1.89-1.05 4.79 1.78 3.71 3.71l-3.22 5.81C8.8 23.16.79 15.23 4.6 13.11Z\" /><path d=\"m10.5 9.5-1-2.29C9.2 6.48 8.8 6 8 6H4.5C2.79 6 2 6.5 2 8.5a7.71 7.71 0 0 0 2 4.83\" /><path d=\"M8 6c0-1.55.24-4-2-4-2 0-2.5 2.17-2.5 4\" /><path d=\"m14.5 13.5 2.29 1c.73.3 1.21.7 1.21 1.5v3.5c0 1.71-.5 2.5-2.5 2.5a7.71 7.71 0 0 1-4.83-2\" /><path d=\"M18 16c1.55 0 4-.24 4 2 0 2-2.17 2.5-4 2.5\" />", "door-open": "<path d=\"M13 4h3a2 2 0 0 1 2 2v14\" /><path d=\"M2 20h3\" /><path d=\"M13 20h9\" /><path d=\"M10 12v.01\" /><path d=\"M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4-1A2 2 0 0 1 13 4.561Z\" />", "gem": "<path d=\"M6 3h12l4 6-10 13L2 9Z\" /><path d=\"M11 3 8 9l4 13 4-13-3-6\" /><path d=\"M2 9h20\" />", "hammer": "<path d=\"m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9\" /><path d=\"m18 15 4-4\" /><path d=\"m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5\" />", "hand": "<path d=\"M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2\" /><path d=\"M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2\" /><path d=\"M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8\" /><path d=\"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15\" />", "headset": "<path d=\"M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z\" /><path d=\"M21 16v2a4 4 0 0 1-4 4h-5\" />", "house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"M12 16v-4\" /><path d=\"M12 8h.01\" />", "layers-3": "<path d=\"m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z\" /><path d=\"m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59\" /><path d=\"m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59\" />", "map-pin": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /><circle cx=\"12\" cy=\"10\" r=\"3\" />", "minus": "<path d=\"M5 12h14\" />", "network": "<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\" /><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\" /><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\" /><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\" /><path d=\"M12 12V8\" />", "notebook-text": "<path d=\"M2 6h4\" /><path d=\"M2 10h4\" /><path d=\"M2 14h4\" /><path d=\"M2 18h4\" /><rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\" /><path d=\"M9.5 8h5\" /><path d=\"M9.5 12H16\" /><path d=\"M9.5 16H14\" />", "plug": "<path d=\"M12 22v-5\" /><path d=\"M9 8V2\" /><path d=\"M15 8V2\" /><path d=\"M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z\" />", "plus": "<path d=\"M5 12h14\" /><path d=\"M12 5v14\" />", "qr-code": "<rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\" /><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\" /><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" /><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\" /><path d=\"M21 21v.01\" /><path d=\"M12 7v3a2 2 0 0 1-2 2H7\" /><path d=\"M3 12h.01\" /><path d=\"M12 3h.01\" /><path d=\"M12 16v.01\" /><path d=\"M16 12h1\" /><path d=\"M21 12v.01\" /><path d=\"M12 21v-1\" />", "receipt-text": "<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\" /><path d=\"M14 8H8\" /><path d=\"M16 12H8\" /><path d=\"M13 16H8\" />", "scan": "<path d=\"M3 7V5a2 2 0 0 1 2-2h2\" /><path d=\"M17 3h2a2 2 0 0 1 2 2v2\" /><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\" /><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\" />", "scan-barcode": "<path d=\"M3 7V5a2 2 0 0 1 2-2h2\" /><path d=\"M17 3h2a2 2 0 0 1 2 2v2\" /><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\" /><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\" /><path d=\"M8 7v10\" /><path d=\"M12 7v10\" /><path d=\"M17 7v10\" />", "scan-qr-code": "<path d=\"M17 12v4a1 1 0 0 1-1 1h-4\" /><path d=\"M17 3h2a2 2 0 0 1 2 2v2\" /><path d=\"M17 8V7\" /><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\" /><path d=\"M3 7V5a2 2 0 0 1 2-2h2\" /><path d=\"M7 17h.01\" /><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\" /><rect x=\"7\" y=\"7\" width=\"5\" height=\"5\" rx=\"1\" />", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\" /><path d=\"m21 21-4.3-4.3\" />", "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /><path d=\"m21.854 2.147-10.94 10.939\" />", "share": "<path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\" /><polyline points=\"16 6 12 2 8 6\" /><line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"15\" />", "shopping-bag": "<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\" /><path d=\"M3 6h18\" /><path d=\"M16 10a4 4 0 0 1-8 0\" />", "signal": "<path d=\"M2 20h.01\" /><path d=\"M7 20v-4\" /><path d=\"M12 20v-8\" /><path d=\"M17 20V8\" /><path d=\"M22 4v16\" />", "smartphone": "<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /><path d=\"M12 18h.01\" />", "sparkles": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /><path d=\"M20 3v4\" /><path d=\"M22 5h-4\" /><path d=\"M4 17v2\" /><path d=\"M5 18H3\" />", "star": "<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\" />", "store": "<path d=\"m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7\" /><path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\" /><path d=\"M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4\" /><path d=\"M2 7h20\" /><path d=\"M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /><circle cx=\"12\" cy=\"7\" r=\"4\" />", "user-round-check": "<path d=\"M2 21a8 8 0 0 1 13.292-6\" /><circle cx=\"10\" cy=\"8\" r=\"5\" /><path d=\"m16 19 2 2 4-4\" />", "utensils": "<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\" /><path d=\"M7 2v20\" /><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\" />", "wallet-cards": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /><path d=\"M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2\" /><path d=\"M3 11h3c.8 0 1.6.3 2.1.9l1.1.9c1.6 1.6 4.1 1.6 5.7 0l1.1-.9c.5-.5 1.3-.9 2.1-.9H21\" />", "wifi": "<path d=\"M12 20h.01\" /><path d=\"M2 8.82a15 15 0 0 1 20 0\" /><path d=\"M5 12.859a10 10 0 0 1 14 0\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" />", "wine": "<path d=\"M8 22h8\" /><path d=\"M7 10h10\" /><path d=\"M12 15v7\" /><path d=\"M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z\" />", "wrench": "<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\" />", "x": "<path d=\"M18 6 6 18\" /><path d=\"m6 6 12 12\" />"};
+const LOGO = `<svg class="logo" viewBox="1.5 2 77 28" fill="currentColor" aria-hidden="true"><path d="M44.9864 2.53162C45.698 2.78081 45.9323 3.31928 45.9128 4.02399C45.8828 5.11913 45.402 6.0428 44.8078 6.9198C43.8549 8.32541 42.561 9.3966 41.2743 10.4758C40.3644 11.2389 39.4715 12.0219 38.5778 12.8039C38.4761 12.8927 38.4116 13.0273 38.341 13.1473C38.1652 13.446 37.8618 13.5837 37.609 13.4719C37.3788 13.3701 37.2352 13.0225 37.4151 12.739C37.6589 12.3547 37.9577 11.9815 38.3062 11.6908C39.5175 10.6802 40.7788 9.72875 41.9863 8.71369C43.2007 7.69267 44.1989 6.48752 44.8167 5.00893C44.9398 4.71461 45.0289 4.39089 45.0537 4.07457C45.0984 3.50412 44.7198 3.27055 44.1877 3.50669C43.6167 3.7602 43.1767 4.18621 42.8146 4.6704C42.3764 5.25637 42.0145 5.89857 41.5903 6.49575C41.472 6.66218 41.2608 6.83849 41.0731 6.86244C40.8019 6.89719 40.6641 6.63216 40.6198 6.39397C40.557 6.05545 40.5423 5.70798 40.5087 5.36421C40.46 4.8647 40.3465 4.38986 40.077 3.95264C39.8571 3.59592 39.5296 3.51738 39.1596 3.53887C38.804 3.55953 38.6339 3.81098 38.5425 4.12031C38.2977 4.9491 38.4797 5.7529 38.7334 6.5382C38.9368 7.16745 39.2374 7.75167 39.7313 8.22209C39.9903 8.46892 39.9091 8.7837 39.5704 8.91354C39.2789 9.02528 39.0183 8.97429 38.8128 8.7213C37.8942 7.59038 37.3075 6.34494 37.5069 4.84445C37.6171 4.017 37.9084 3.27251 38.6358 2.7769C38.7852 2.67502 38.9616 2.61232 39.1256 2.53162H39.8419C40.7958 2.96873 41.1681 3.82692 41.4447 4.81021C41.5324 4.68654 41.5859 4.61057 41.64 4.53491C42.1734 3.78723 42.7643 3.10114 43.6624 2.77382C43.9439 2.67132 44.2408 2.61108 44.5306 2.53162H44.9864Z"/><path d="M56.8996 14.9777C56.8907 14.9974 56.8817 15.017 56.8727 15.0366C56.7342 15.055 56.5924 15.0608 56.4575 15.0942C56.1091 15.1803 55.8899 15.4213 55.8825 15.7075C55.8757 15.9668 56.0852 16.1902 56.4459 16.2872C56.9775 16.4302 57.476 16.3274 57.9334 16.0403C58.2622 15.8339 58.2666 15.5241 57.9169 15.344C57.5993 15.1806 57.2404 15.0967 56.8996 14.9777Z"/><path d="M30.1486 20.0373C30.8452 20.0843 32.5304 19.203 32.7125 18.6923C31.6827 18.8124 30.9462 19.3901 30.1486 20.0373ZM40.7012 26.7746C41.9614 26.0082 42.994 25.0191 43.7056 23.7182C42.5971 24.6313 41.4534 25.5094 40.7012 26.7746ZM65.2738 18.7669C64.6508 18.6785 62.8471 20.1981 62.7215 20.7451C63.3326 20.8683 64.9466 19.6259 65.2738 18.7669ZM78 18.3678C77.7382 18.6791 77.3889 18.5809 77.0608 18.5604C75.9794 18.4931 74.8982 18.3554 73.8176 18.3612C71.6051 18.3731 69.4414 18.7445 67.307 19.3388C66.6162 19.5313 66.0854 19.8101 65.6091 20.3634C64.9638 21.113 64.0823 21.5629 63.1003 21.77C62.6145 21.8725 62.1762 21.7675 61.8118 21.4074C61.5346 21.1336 61.457 20.8259 61.6073 20.4628C61.8362 19.9099 62.3054 19.5638 62.7245 19.1765C62.9836 18.9371 63.2594 18.7156 63.5051 18.4201C63.2452 18.4541 62.983 18.4761 62.7257 18.5242C60.7059 18.9018 58.7584 19.5242 56.8284 20.2186C55.8745 20.5619 54.8856 20.809 53.9118 21.0967C53.8508 21.1146 53.7825 21.1102 53.7175 21.1126C52.9105 21.1416 52.5567 20.6679 52.8254 19.9058C52.9035 19.684 53.012 19.4731 53.1342 19.1941C52.8741 19.2406 52.6491 19.2757 52.4263 19.3214C50.2612 19.7652 48.3092 20.7118 46.4376 21.8466C46.0394 22.0881 45.6406 22.3295 45.2526 22.5868C45.1719 22.6403 45.077 22.7745 45.0911 22.8529C45.251 23.7312 44.8887 24.4565 44.3813 25.1043C43.2133 26.5955 41.7186 27.6902 40.0188 28.5125C39.651 28.6905 39.1022 28.2552 39.113 27.8036C39.1281 27.1801 39.376 26.6305 39.6727 26.0962C40.4342 24.7243 41.6713 23.8175 42.8554 22.8597C43.1307 22.6369 43.4238 22.4361 43.7287 22.2106C43.4631 21.8032 43.1059 21.5613 42.6637 21.5034C42.161 21.4375 41.6463 21.4639 41.1427 21.4026C40.8782 21.3705 40.6073 21.2683 40.3773 21.1332C40.2821 21.0774 40.2346 20.8416 40.2638 20.7093C40.2834 20.6213 40.4698 20.5375 40.5944 20.5103C41.5354 20.3042 42.4906 20.1535 43.4181 19.9001C43.9188 19.7634 44.3743 19.4608 44.848 19.2282C44.9214 19.1921 44.9824 19.1309 45.0491 19.0811C45.0342 19.0399 45.0192 18.9986 45.0043 18.9573C43.9027 18.9399 42.7993 18.8755 41.6999 18.9155C39.7713 18.9856 37.9461 19.5476 36.1532 20.2162C35.4023 20.4963 34.6627 20.8059 33.9134 21.0903C33.0967 21.4003 32.5897 21.2621 32.0596 20.6126C31.6053 20.7575 31.161 20.9268 30.7022 21.0352C30.423 21.1012 30.1191 21.1043 29.8306 21.0811C29.0593 21.0193 28.7137 20.3631 29.0706 19.6753C29.3593 19.1188 29.8471 18.7871 30.3883 18.516C30.4656 18.4773 30.5468 18.4461 30.6242 18.4076C30.6397 18.3998 30.6458 18.374 30.6942 18.2939C30.1986 18.3212 29.7412 18.328 29.2879 18.3747C27.4234 18.5666 25.6193 19.0459 23.8392 19.6004C22.6326 19.976 21.4684 20.4851 20.2675 20.8816C19.5713 21.1114 18.8423 21.2457 18.1239 21.4043C17.8206 21.4712 17.3987 21.1805 17.3064 20.8851C17.2427 20.681 17.3418 20.5823 17.5236 20.5252C18.7493 20.1403 19.9846 19.7816 21.1947 19.3526C21.5986 19.2094 21.9463 18.8967 22.3009 18.636C22.3955 18.5665 22.4205 18.4031 22.4774 18.2828C22.4578 18.252 22.4383 18.2213 22.4187 18.1904C22.0845 18.2562 21.7437 18.2986 21.4172 18.3914C18.5438 19.2087 16.1197 20.8059 13.8408 22.6796C12.394 23.8692 11.2965 25.3538 10.1258 26.7822C9.42649 27.6356 8.71116 28.4761 7.99778 29.318C7.81583 29.5327 7.52804 29.5134 7.21158 29.2862C6.91802 29.0756 6.83942 28.8636 7.03324 28.6045C7.9328 27.4019 8.75355 26.1219 9.78081 25.0372C11.389 23.3389 12.7532 21.4665 14.1197 19.5873C14.2978 19.3423 14.4675 19.0911 14.6526 18.8516C14.8605 18.5826 14.9786 18.3035 14.9028 17.9504C14.8585 17.7436 15.0722 17.6165 15.3261 17.6723C15.7466 17.7648 16.0432 18.2947 15.8949 18.791C15.7978 19.1161 15.6107 19.415 15.4571 19.7224C15.3974 19.8419 15.319 19.9521 15.221 20.1128C15.991 19.6705 16.6878 19.2377 17.4135 18.8602C18.6854 18.1987 20.0068 17.6513 21.4226 17.3748C21.7255 17.3155 22.0506 17.3077 22.3577 17.3431C23.0481 17.4227 23.451 17.8358 23.6327 18.605C24.173 18.4577 24.7122 18.3089 25.2525 18.1637C27.0711 17.6753 28.9101 17.2882 30.8046 17.418C31.4636 17.4631 32.1163 17.6718 32.7591 17.8516C33.1047 17.9484 33.3114 18.2466 33.4803 18.5626C33.5446 18.6832 33.6581 18.7925 33.7749 18.8675C34.0253 19.0283 34.0539 19.2006 33.8383 19.4156C33.6141 19.6395 33.3908 19.8645 33.1671 20.089C33.1878 20.1185 33.2087 20.1481 33.2294 20.1776C33.3789 20.1325 33.5337 20.1 33.6771 20.0401C35.2073 19.4016 36.7416 18.7772 38.3652 18.4031C39.5769 18.1237 40.8052 17.974 42.0456 18.0247C43.3349 18.0775 44.622 18.1865 45.9089 18.2869C46.4412 18.3284 46.6494 18.7244 46.436 19.2029C46.1017 19.9531 45.4141 20.2625 44.7287 20.5648C44.366 20.7248 43.9793 20.8307 43.5888 20.9661C43.9109 21.2097 44.2098 21.4359 44.5024 21.6574C45.4414 21.1223 46.3721 20.5698 47.3234 20.0546C49.2999 18.9842 51.4279 18.3768 53.6471 18.0691C54.0475 18.0137 54.4475 18.0132 54.816 18.2361C55.1414 18.4329 55.172 18.6635 54.9108 18.9413C54.6445 19.2245 54.387 19.5162 54.1355 19.8123C54.0615 19.8994 54.021 20.0146 53.9139 20.2106C54.1986 20.145 54.4048 20.116 54.5984 20.05C56.0029 19.5712 57.4025 19.078 58.8082 18.6027C60.2366 18.1197 61.683 17.7028 63.1846 17.5065C63.6754 17.4422 64.1575 17.3906 64.5591 17.7805C64.6247 17.8443 64.7303 17.8674 64.7999 17.9008C64.9066 17.7351 64.9728 17.5314 65.1128 17.442C65.2624 17.3464 65.4827 17.3235 65.6697 17.3306C66.1755 17.3497 66.6828 17.7575 66.7794 18.1888C66.7955 18.2611 66.801 18.3356 66.8126 18.4179C67.4652 18.2618 68.0997 18.0904 68.7424 17.9599C71.008 17.4999 73.2935 17.3132 75.6031 17.51C76.0786 17.5506 76.5532 17.6029 77.028 17.6505C77.4063 17.6884 77.7474 17.805 78 18.1081V18.3678Z"/><path d="M6.82153 17.1288C8.45251 17.1548 9.96014 17.4838 11.3388 18.3041C11.3761 18.3262 11.4259 18.3378 11.4503 18.3692C11.5426 18.4886 11.6269 18.6139 11.7143 18.737C11.579 18.7461 11.4318 18.7947 11.3105 18.7582C10.0061 18.3654 8.68171 18.089 7.31396 18.0932C6.24513 18.0965 5.18961 18.1999 4.22001 18.7123C4.21052 18.7174 4.20072 18.7221 4.19144 18.7279C3.78266 18.9787 3.33551 19.2159 3.32736 19.7747C3.3187 20.365 3.6758 20.7572 4.14781 21.0503C4.62724 21.3481 5.15536 21.5026 5.72299 21.4929C7.82145 21.4572 9.70423 20.8196 11.319 19.4634C11.5144 19.2993 11.6802 19.0877 11.8199 18.8723C12.2185 18.2579 12.0415 17.6343 11.3532 17.365C10.679 17.1015 9.97262 16.9216 9.28823 16.6827C8.63591 16.4551 7.98257 16.224 7.35006 15.9483C6.66804 15.6509 6.51363 14.9233 6.96954 14.3409C7.84878 13.2177 9.68782 12.7183 11.0029 13.2543C11.4301 13.4285 11.7747 13.7069 11.9028 14.1696C11.9643 14.3916 12.0453 14.7241 11.769 14.7867C11.5801 14.8295 11.2532 14.6602 11.121 14.4858C10.7288 13.9683 10.4925 13.8486 9.87071 14.0316C9.25429 14.213 8.64984 14.4271 8.16483 14.8672C8.04714 14.974 7.90335 15.1657 7.92924 15.2843C7.95493 15.4024 8.16617 15.5197 8.3178 15.5648C9.30236 15.8587 10.3015 16.1062 11.2768 16.4264C11.6682 16.5548 12.0443 16.7875 12.3706 17.0441C13.4363 17.8819 13.5136 19.1021 12.5923 20.0946C11.9295 20.8087 11.0722 21.236 10.2112 21.6451C8.57341 22.423 6.85773 22.7682 5.0583 22.3798C3.93687 22.1378 2.9453 21.6295 2.34033 20.5973C1.65357 19.4258 2.02604 18.3736 3.27837 17.8177C4.42105 17.3106 5.62944 17.1613 6.82153 17.1288Z"/><path d="M56.8996 14.9777C57.2404 15.0967 57.5993 15.1806 57.9169 15.344C58.2666 15.5241 58.2622 15.8339 57.9334 16.0403C57.476 16.3274 56.9775 16.4302 56.4459 16.2872C56.0852 16.1902 55.8757 15.9668 55.8825 15.7075C55.8899 15.4213 56.1091 15.1803 56.4575 15.0942C56.5924 15.0608 56.7342 15.055 56.8727 15.0366C56.8817 15.017 56.8907 14.9974 56.8996 14.9777Z"/></svg>`;
+const SYM = `<svg class="mark" viewBox="5 1.5 22 29" fill="currentColor" aria-hidden="true"><path d="M24.2299 2C25.9716 2.63552 26.545 4.00882 26.4973 5.80606C26.4238 8.59906 25.2471 10.9547 23.7926 13.1914C21.4604 16.7762 18.2935 19.5081 15.1442 22.2605C12.9172 24.2066 10.7316 26.2036 8.5443 28.1978C8.29537 28.4243 8.13758 28.7678 7.96464 29.0737C7.53444 29.8354 6.79194 30.1867 6.17315 29.9014C5.60965 29.6419 5.25823 28.7554 5.69852 28.0323C6.29535 27.0523 7.02648 26.1006 7.87956 25.3592C10.8442 22.7817 13.9314 20.3552 16.887 17.7664C19.8592 15.1625 22.3023 12.0889 23.8146 8.31801C24.1158 7.56738 24.3339 6.74178 24.3945 5.93506C24.5041 4.48022 23.5773 3.88455 22.2751 4.48677C20.8774 5.13331 19.8004 6.21978 18.9143 7.45465C17.8418 8.94907 16.9559 10.5869 15.9178 12.1099C15.6282 12.5344 15.1111 12.984 14.6517 13.0451C13.9879 13.1337 13.6506 12.4578 13.5423 11.8504C13.3886 10.987 13.3525 10.1008 13.2704 9.2241C13.1513 7.95017 12.8733 6.73916 12.2136 5.62411C11.6756 4.71435 10.874 4.51404 9.96845 4.56884C9.09795 4.62154 8.68164 5.26283 8.45796 6.05172C7.85886 8.16542 8.30421 10.2154 8.92527 12.2182C9.42313 13.823 10.1588 15.313 11.3676 16.5127C12.0015 17.1422 11.8029 17.945 10.9738 18.2761C10.2603 18.5611 9.62257 18.4311 9.11941 17.7858C6.87122 14.9016 5.4352 11.7253 5.92322 7.89852C6.19285 5.78823 6.90581 3.88953 8.68618 2.62556C9.052 2.36574 9.48372 2.20581 9.88514 2H11.6382C13.973 3.11479 14.8842 5.30346 15.5613 7.81121C15.7759 7.49581 15.9069 7.30206 16.0392 7.10909C17.3449 5.20226 18.7911 3.45248 20.9893 2.6177C21.6782 2.3563 22.4048 2.20266 23.1143 2H24.2299Z"/></svg>`;
+const ic = (n, s = 20, w = 1.75, cls = '') => `<svg class="i ${cls}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+const A_ = n => `Spazio/asset-${n}.png`;
+const img = (n, alt = '', cls = '') => `<img src="${A_(n)}" alt="${alt}" ${cls ? `class="${cls}"` : ''} loading="lazy" decoding="async">`;
+const brl = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+const brl0 = v => Number.isInteger(v) ? 'R$ ' + v : brl(v);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LOJA = 'Spazio Mateus São Luís Shopping';
+
+/* ---------------- Catálogo ---------------- */
+const P = {
+  veuve:{t:'e', cat:'adega', brand:'Veuve Clicquot', name:'Champagne Branco Veuve Clicquot', size:'1,5 L', price:1055.99, img:9, hero:31, thumb:34,
+    som:'Perlage fina, notas de brioche e maçã verde. Abra com ostras, queijos de casca lavada ou só pela comemoração.',
+    desc:'Brut não safrado da Maison Veuve Clicquot, em Reims. Predominância de Pinot Noir, que dá estrutura e frescor. Servir entre 8 °C e 10 °C.'},
+  taittinger:{t:'e', cat:'adega', brand:'Taittinger Prestige', name:'Champagne Taittinger Nocturne Brut', size:'750 ml', price:635.99, img:10, hero:10, thumb:10,
+    som:'Mais macio e com dulçor delicado. Vai muito bem com sobremesas de frutas vermelhas.',
+    desc:'Champagne sec pensado para a noite, com maturação longa em caves de giz. Aromas de frutas maduras e mel.'},
+  moet:{t:'e', cat:'adega', brand:'Moët & Chandon', name:'Champagne Moët & Chandon Ice Rosé Impérial', size:'750 ml', price:618.99, img:11, hero:11, thumb:11,
+    som:'Feito para ser servido com gelo: frutas vermelhas, frescor e um toque doce. Perfeito para a piscina ou um fim de tarde.',
+    desc:'O primeiro champagne rosé criado para ser apreciado com gelo. Sirva em taça grande, com três ou quatro cubos.'},
+  veuverose:{t:'e', cat:'adega', brand:'Veuve Clicquot', name:'Champagne Veuve Clicquot Rosé Rich', size:'750 ml', price:610.99, img:12, hero:12, thumb:12,
+    som:'Mais intenso e frutado, com notas de morango e pêssego. Vai bem com drinks de frutas ou sobremesas leves.',
+    desc:'Rosé com dosagem mais alta, pensado para mixologia. Sirva com gelo e frutas frescas.'},
+  hennessy:{t:'e', cat:'adega', brand:'Hennessy', name:'Conhaque Cognac Hennessy V.S.O.P', size:'700 ml', price:594.99, img:13, hero:13, thumb:13,
+    som:'Baunilha, especiarias e frutas secas. Um bom digestivo depois do jantar, puro ou com uma pedra de gelo.',
+    desc:'Blend de eaux-de-vie envelhecidas em barris de carvalho francês por pelo menos quatro anos.'},
+  limona:{t:'e', cat:'casa', brand:'Porto Brasil', name:'Prato Fundo Porto Brasil Bio Limona 830ml', size:'1 und', price:39.99, img:25, hero:25, thumb:25,
+    desc:'Stoneware com esmalte reativo, cada peça com variações únicas de cor. Pode ir ao micro-ondas e à lava-louças.'},
+  coup:{t:'e', cat:'casa', brand:'Porto Brasil', name:'Xícara de Café Coup Stoneware Entre Laços 97ml', size:'1 und', price:29.90, img:26, hero:26, thumb:26,
+    desc:'Xícara de café em stoneware da linha Entre Laços, com acabamento artesanal.'},
+  brinox:{t:'e', cat:'casa', brand:'Brinox', name:'Conjunto de Talheres Brinox para Churrasco', size:'1 und', price:169.99, img:28, hero:28, thumb:28,
+    desc:'Garfo e faca trinchantes em aço inox com cabo de madeira tratada.'},
+  wolff:{t:'e', cat:'casa', brand:'Wolff', name:'Conjunto 6 Talheres com Cabo de Resina Aço Inox Wolff', size:'1 und', price:409.09, img:29, hero:29, thumb:29,
+    desc:'Seis peças em aço inox com cabo de resina. Para a mesa posta do dia a dia ou de domingo.'},
+  croissant:{t:'b', name:'Croissant de morango com Nutella', price:26, img:14, hero:14, thumb:14, time:'~10 min', serve:'Serve 1 pessoa',
+    desc:'Croissant recheado com Nutella e morangos frescos.'},
+  sanduiche:{t:'b', name:'Sanduíche de carne de sol', price:31, img:15, hero:15, thumb:15, time:'~15 min', serve:'Serve 1 pessoa',
+    desc:'Pão francês, carne de sol desfiada, requeijão, queijo coalho, tomate e alface.'},
+  caldo:{t:'b', name:'Caldo de ovos', price:30, img:16, hero:32, thumb:35, time:'~20 min', serve:'Serve 1 pessoa',
+    desc:'Clássico da culinária maranhense, nosso caldo é tradicional e saboroso. Leva farinha de mandioca, ovos e cheiro-verde, resultando em um preparo encorpado e reconfortante.'},
+  manteiga:{t:'b', name:'Pão com manteiga', price:8, img:38, hero:33, thumb:45, time:'~5 min', serve:'Serve 1 pessoa',
+    desc:'Pão francês tostado com manteiga.'},
+  casquinha:{t:'b', name:'Pão casquinha com requeijão', price:12, img:39, hero:39, thumb:39, time:'~8 min', serve:'Serve 1 pessoa',
+    desc:'Uma generosa fatia de pão de forma com requeijão Catupiry tostado.'},
+  paoovos:{t:'b', name:'Pão francês com ovos mexidos', price:12, img:40, hero:40, thumb:40, time:'~10 min', serve:'Serve 1 pessoa',
+    desc:'Ovos, queijo prato e requeijão.'},
+  ovos:{t:'b', name:'Ovos caipiras mexidos', price:18, img:41, hero:41, thumb:41, time:'~12 min', serve:'Serve 1 pessoa',
+    desc:'Ovos com tomate, queijo minas frescal, sal e salsinha. Acompanha toast de pão Petrópolis.'},
+};
+const SOMM = ['veuve','taittinger','moet','veuverose','hennessy'];
+const AGORA = ['croissant','sanduiche','caldo'];
+const MENU = [
+  ['Café da Manhã e Brunch', ['manteiga','casquinha','paoovos','ovos']],
+  ['Combos Especiais', []], ['Toasts Gourmet', []], ['Salgados Artesanais', []],
+  ['Regionais', ['caldo']], ['Sanduíches', ['sanduiche']], ['Sopas e Cremes', ['caldo']],
+  ['Momento Doce', ['croissant']], ['Cafés Clássicos', []], ['Sucos Naturais', []],
+];
+const COLS = [{img:4, t:'Casa & Mesa', go:'colecao'}, {img:5, t:'Vinhos & Brindes', cat:'adega'}, {img:6, t:'Frios'}, {img:7, t:'Leve & Natural'}, {img:8, t:'Rotina com Sabor'}];
+const CATS = [[18,'Adega','adega'],[19,'Queijaria'],[20,'Charcutaria'],[21,'Boulangerie'],[22,'Mercearia fina'],[23,'Flores e bazar']];
+
+/* ---------------- Estado ---------------- */
+let S;
+const fresh = () => ({
+  screen:'home', param:null, history:[], qty:1, cart:{}, ship:'home', chip:'emporio', q:'', cat:null, order:null,
+  mtab:'cardapio', mcat:0, draft:{}, sent:[], scanFound:false, sheet:null,
+  service:true, method:'pix', rate:0, sub:null, plan:'adega',
+});
+S = fresh();
+
+const cartN = () => Object.values(S.cart).reduce((a, b) => a + b, 0);
+const sumOf = (o, f = () => true) => Object.entries(o).filter(([id]) => f(P[id])).reduce((a, [id, q]) => a + P[id].price * q, 0);
+const sentTotal = () => S.sent.reduce((a, x) => a + P[x.id].price * x.q, 0);
+const sentN = () => S.sent.reduce((a, x) => a + x.q, 0);
+const draftN = () => Object.values(S.draft).reduce((a, b) => a + b, 0);
+
+/* ---------------- Peças ---------------- */
+const backBtn = () => `<button class="cbtn" data-act="back" aria-label="Voltar">${ic('chevron-left', 20, 2)}</button>`;
+const hdr = (t, s, right = '<span class="sp"></span>', cls = '') => `<div class="hdr ${cls}">${backBtn()}<div class="hdr-t"><b>${t}</b>${s ? `<span>${s}</span>` : ''}</div>${right}</div>`;
+const secH = (t, more = true, act = '') => `<div class="sec-h"><h2>${t}</h2>${more ? `<button class="more" ${act || 'data-act="soon"'}>Ver mais</button>` : ''}</div>`;
+const pcard = id => { const p = P[id]; return `<button class="pcard" data-act="open" data-id="${id}">
+  <div class="pimg"><div class="glow"></div>${img(p.img, p.name)}</div>
+  <div class="pinfo"><span class="brand">${p.brand}</span><span class="pname">${p.name}</span><span class="meta12">${p.size}</span><span class="price14">${brl(p.price)}</span></div></button>`; };
+const mrow = (id, opts = {}) => { const p = P[id]; return `<div class="mrow" role="button" tabindex="0" data-act="${opts.act || 'open'}" data-id="${id}"><div class="glow"></div>
+  <div class="mtx"><b>${opts.prefix || ''}${p.name}</b>${p.desc ? `<p>${p.desc}</p>` : ''}<b class="price14">${brl0(p.price * (opts.q || 1))}</b>${opts.extra || ''}</div>
+  <div class="mimg">${img(p.img, '')}${opts.badge || ''}</div></div>`; };
+const step = (id, q, inc, dec) => `<div class="pill-step" data-stop="1"><button data-act="${dec}" data-id="${id}" aria-label="Remover um">−</button><b>${q}</b><button data-act="${inc}" data-id="${id}" aria-label="Adicionar um">+</button></div>`;
+const radio = (on, act, id, body) => `<button class="radio" aria-pressed="${on}" data-act="${act}" data-id="${id}">${body}<i></i></button>`;
+
+/* ---------------- Telas ---------------- */
+const V = {};
+
+V.home = () => `<div class="body">
+  <button class="addr" data-act="soon">${ic('map-pin', 24, 1.25)}<div><span>Entregar em <b>Casa</b> · Rua dos Bicudos, 19</span><span>Saindo de <b>${LOJA}</b></span></div>${ic('chevron-down', 18, 1.6)}</button>
+  <button class="banner" data-act="go" data-to="colecao" aria-label="Empório Spazio">${img(1, 'Empório Spazio')}<span class="dots"><i class="on"></i><i></i><i></i></span></button>
+  <div class="doors">
+    <button class="door" data-act="chip" data-id="emporio">${img(2, 'Empório: adega, queijaria e mercearia fina')}<span class="lbl14">Empório</span></button>
+    <button class="door" data-act="chip" data-id="bistro">${img(3, 'Bistrô: cozinha premium artesanal')}<span class="lbl14">Bistrô</span></button>
+  </div>
+  <section class="sec">${secH('Coleção Spazio')}<div class="hs">${COLS.map(c => `<button class="colc" data-act="${c.go ? 'go' : c.cat ? 'tile' : 'toast'}" data-to="${c.go || ''}" data-id="${c.cat || ''}" data-msg="Coleção ${c.t} na versão completa">${img(c.img, c.t)}<span class="lbl14">${c.t}</span></button>`).join('')}</div></section>
+  <section class="sec">${secH('Seleção da sommelière', true, 'data-act="tile" data-id="adega"')}<div class="hs">${SOMM.map(pcard).join('')}</div></section>
+  <section class="sec">${secH('No Bistrô agora', true, 'data-act="chip" data-id="bistro"')}<div class="rows">${AGORA.map(id => mrow(id)).join('')}</div></section>
+  <section class="sec">${secH('Eventos a caminho', false)}<button class="event" data-act="toast" data-msg="Inscrição aberta para membros do Clube Spazio">${img(17, 'Degustação de Barolos')}</button></section>
+  <div style="height:96px"></div></div>`;
+
+V.colecao = () => `<div class="chero">${img(24, 'Coleção Spazio: Casa e Mesa')}<button class="back-hit" data-act="back" aria-label="Voltar"></button></div>
+  <div class="cbody"><p class="intro">Transforme cada ocasião em uma experiência única com peças exclusivas para casa e mesa, onde sofisticação e requinte se encontram em cada detalhe.</p>
+  <section class="sec">${secH('Empório Louças')}<div class="hs">${['limona','coup'].map(pcard).join('')}</div></section>
+  <section class="sec">${secH('Empório Utilidades')}<div class="hs">${['brinox','wolff'].map(pcard).join('')}</div></section></div>`;
+
+const prodPage = (id, mesa) => { const p = P[id], e = p.t === 'e';
+  return `<div class="phero ${e ? '' : 'olive'}"><div class="glow"></div>
+    <div class="hdr on-dark">${backBtn()}<div class="hdr-t"><b>${mesa ? 'Mesa 12' : e ? (p.cat === 'adega' ? 'Adega Spazio' : 'Empório Spazio') : 'Spazio Bistrô'}</b><span>${mesa ? LOJA : e ? (p.cat === 'adega' ? 'Seleção da sommelière' : 'Coleção Casa e Mesa') : 'Preparado na hora'}</span></div>
+    <button class="cbtn" data-act="toast" data-msg="Link copiado para compartilhar" aria-label="Compartilhar">${ic('share', 18, 1.5)}</button></div>
+    ${img(p.hero, p.name)}</div>
+  <div class="pbody">
+    <div class="from">${ic(mesa ? 'utensils' : 'map-pin', 14, 1.25)}<span>${mesa ? 'Servido na <b>mesa 12</b>' : `Entregue por <b>${LOJA}</b>`}</span></div>
+    <div class="pblock"><span class="brand">${e ? p.brand : 'do nosso Bistrô'}</span><span class="nm">${p.name}</span><span class="meta12">${e ? p.size : `${p.time} • ${p.serve}`}</span><span class="pr">${brl(p.price)}</span></div>
+    <div class="hr16"></div>
+    ${p.som ? `<div class="somm"><b>Lívia Duarte, sommelière do Spazio:</b><q>“${p.som}”</q></div>` : ''}
+    <p class="desc">${p.desc}</p>
+    ${e ? (p.cat === 'adega' ? `<div class="age">${ic('info', 16, 1.5)}<span>Venda proibida para menores de 18 anos. Aprecie com moderação.</span></div>` : '')
+        : `<div class="field"><label for="obs">Observação para a cozinha</label><div class="inp"><input id="obs" placeholder="Ex.: sem cheiro-verde"></div></div>`}
+  </div>`; };
+V.produto = () => prodPage(S.param, false);
+V.mitem = () => prodPage(S.param, true);
+
+V.explorar = () => { const q = S.q.trim().toLowerCase();
+  const res = q ? Object.keys(P).filter(id => (P[id].name + ' ' + (P[id].brand || '')).toLowerCase().includes(q)) : S.cat ? Object.keys(P).filter(id => P[id].cat === S.cat) : null;
+  const bistro = Object.keys(P).filter(id => P[id].t === 'b');
+  return `<div class="body">
+  <label class="inp bd">${ic('search', 18, 1.6)}<input id="q" type="search" placeholder="Ex.: pratos, vinhos, queijos..." value="${esc(S.q)}" autocomplete="off"></label>
+  <div class="chips">${[['tudo','Tudo'],['bistro','Bistrô'],['emporio','Empório']].map(([k, t]) => `<button class="chip" aria-pressed="${S.chip === k}" data-act="chip" data-id="${k}">${t}</button>`).join('')}</div>
+  ${res ? `<div class="res-h"><b>${q ? `Resultados para “${esc(S.q)}”` : 'Adega'}</b><span>${res.length} ${res.length === 1 ? 'item' : 'itens'}</span></div>
+    <div>${res.map(id => { const p = P[id]; return `<button class="srow" data-act="open" data-id="${id}"><div class="simg ${p.t}">${img(p.img, '')}</div><div class="mtx"><span class="brand">${p.brand || 'Bistrô'}</span><b>${p.name}</b><span class="price14">${brl(p.price)}</span></div>${ic('chevron-right', 18, 1.5)}</button>`; }).join('') || `<div class="empty">${img(46, '')}<b>Nada por aqui ainda</b><span>Tente buscar por champagne, caldo ou xícara.</span></div>`}</div>
+    ${S.cat && !q ? `<button class="lnk" data-act="tile" data-id="">Ver todas as categorias</button>` : ''}` : `
+  ${S.chip !== 'bistro' ? `<span class="eyeb">Explorar o Empório</span><div class="cats">${CATS.map(([n, t, c]) => `<button data-act="tile" data-id="${c || ''}" aria-label="${t}">${img(n, t)}</button>`).join('')}</div>` : ''}
+  ${S.chip !== 'emporio' ? `<span class="eyeb">No cardápio do Bistrô</span><div class="rows">${bistro.map(id => mrow(id)).join('')}</div>` : ''}`}
+  <div style="height:96px"></div></div>`; };
+
+V.sacola = () => { const ids = Object.keys(S.cart);
+  if (!ids.length) return `<div class="body">${hdr('Sua sacola', LOJA)}<div class="empty">${img(46, '')}<b>Sua sacola está vazia</b><span>Produtos do Empório e pratos do Bistrô vão para a mesma sacola.</span></div><button class="btn" data-act="home">Explorar o Spazio</button></div>`;
+  const grp = (t, f) => { const g = ids.filter(id => f(P[id])); if (!g.length) return '';
+    return `<div class="card g8"><div class="ch"><b>${t}</b><span>${brl(sumOf(S.cart, f))}</span></div><div class="hr"></div>
+      ${g.map(id => { const p = P[id]; return `<div class="bline">${img(p.thumb, '')}<div class="mtx"><b>${p.name}</b><span>${brl(p.price)}${p.t === 'b' ? ` · ${p.time}` : ''}</span></div>${step(id, S.cart[id], 'inc', 'dec')}</div>`; }).join('')}</div>`; };
+  const em = sumOf(S.cart, p => p.t === 'e'), bi = sumOf(S.cart, p => p.t === 'b'), fee = S.ship === 'home' ? 12 : 0;
+  return `<div class="body">${hdr('Sua sacola', LOJA)}
+    ${grp('Do Empório', p => p.t === 'e')}${grp('Do Bistrô', p => p.t === 'b')}
+    <div class="card"><b style="font-size:16px;font-weight:500">Como deseja receber seu pedido?</b><div style="display:flex;flex-direction:column;gap:8px">
+      ${radio(S.ship === 'home', 'ship', 'home', `<span class="rt"><b>Receber em casa</b><small>Hoje, entre 20h55 e 21h05</small></span><span class="rv">${brl(12)}</span>`)}
+      ${radio(S.ship === 'pick', 'ship', 'pick', `<span class="rt"><b>Retirar na loja</b><small>Fica pronto entre 20h30 e 20h45</small></span><span class="rv free">Grátis</span>`)}</div></div>
+    <div class="sec" style="gap:12px"><div class="ch"><b>Resumo do pedido</b></div><div class="hr"></div>
+      <div class="kv">${bi ? `<div><span>Bistrô</span><b>${brl(bi)}</b></div>` : ''}${em ? `<div><span>Empório</span><b>${brl(em)}</b></div>` : ''}<div><span>Entrega</span><b>${fee ? brl(fee) : 'Grátis'}</b></div></div></div>
+    <div class="card"><b style="font-size:16px;font-weight:500">Como deseja pagar?</b>
+      <div class="pay-row"><span class="ricon">${ic('credit-card', 18, 1.5)}</span><span class="rt"><b>Cartão de crédito</b><small>•••• 4417</small></span><button data-act="soon"><u>Trocar</u></button></div>
+      <div class="cvv"><label class="inp"><input inputmode="numeric" maxlength="4" placeholder="CVV" aria-label="CVV" value="123"></label><label class="inp"><select aria-label="Parcelamento"><option>1x sem juros</option><option>2x sem juros</option><option selected>3x sem juros</option></select>${ic('chevron-down', 16, 1.5)}</label></div></div>
+    <div style="height:150px"></div></div>`; };
+
+V.pedido = () => { const o = S.order || {cart:{veuve:1, caldo:1}, ship:'home'};
+  const ids = Object.keys(o.cart), hasE = ids.some(id => P[id].t === 'e'), hasB = ids.some(id => P[id].t === 'b');
+  const fee = o.ship === 'home' ? 12 : 0, tot = sumOf(o.cart) + fee, n = Object.values(o.cart).reduce((a, b) => a + b, 0);
+  const steps = [['ok','20h14','Pedido confirmado','Pagamento aprovado no cartão •••• 4417']];
+  if (hasE) steps.push(['ok','20h22','Empório • Compras separadas','Nenhum item foi cortado']);
+  if (hasB) steps.push(['now','Agora','Bistrô • Em preparo','A cozinha começou seu pedido']);
+  else steps[steps.length - 1][0] = steps.length > 1 ? 'ok' : 'ok';
+  steps.push(['off','', o.ship === 'home' ? 'Saída para entrega' : 'Pronto para retirada', ''], ['off','', o.ship === 'home' ? 'Entregue' : 'Retirado', '']);
+  return `<div class="body">
+  ${hdr('Pedido nº 202611051234', LOJA, `<button class="cbtn-l" data-act="toast" data-msg="Abrindo conversa com o atendimento"><span class="cbtn">${ic('headset', 18, 1.5)}</span>Ajuda</button>`, 'wide')}
+  <div class="eta-t"><span>${o.ship === 'home' ? 'Seu pedido chegará em' : 'Seu pedido fica pronto em'}</span><b>${o.ship === 'home' ? '34 minutos' : '18 minutos'}</b></div>
+  <div class="tl">${steps.map(([st, h, t, s], i) => `${i ? '<div class="tline"><i></i></div>' : ''}<div class="tli"><div class="tc"><span class="tdot ${st}">${st === 'ok' ? ic('check', 16, 2.5) : ''}</span>${h ? `<span>${h}</span>` : ''}</div><div class="tx"><b>${t}</b>${s ? `<span>${s}</span>` : ''}</div></div>`).join('')}</div>
+  <div class="sec" style="gap:12px"><div class="ch"><b>Itens do pedido</b><span>${n} ${n === 1 ? 'item' : 'itens'} • ${brl(tot)}</span></div><div class="hr"></div></div>
+  <div style="display:flex;flex-direction:column;gap:8px">${ids.map(id => `<div class="bline">${img(P[id].thumb, '')}<div class="mtx"><b>${P[id].name}</b><span>${o.cart[id]} x ${brl(P[id].price)}</span></div></div>`).join('')}</div>
+  <div class="sec" style="gap:12px"><div class="ch"><b>Forma de pagamento</b></div><div class="hr"></div></div>
+  <div class="pay-row"><span class="ricon">${ic('credit-card', 18, 1.5)}</span><span class="rt"><b>Cartão de crédito</b><small>•••• 4417</small></span><span style="font-size:14px">3x sem juros</span></div>
+  <div style="height:24px"></div></div>`; };
+
+/* ----- mesa ----- */
+const QR = (() => { let s = 7, r = () => (s = (s * 9301 + 49297) % 233280) / 233280; const N = 25, c = 5; let d = '';
+  const fin = (x, y) => (x < 7 && y < 7) || (x >= N - 7 && y < 7) || (x < 7 && y >= N - 7);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!fin(x, y) && r() > .52) d += `M${x * c} ${y * c}h${c}v${c}h-${c}z`;
+  const f = (x, y) => `<rect x="${x}" y="${y}" width="35" height="35" rx="4"/><rect x="${x + 5}" y="${y + 5}" width="25" height="25" rx="3" fill="#F4F2EC"/><rect x="${x + 10}" y="${y + 10}" width="15" height="15" rx="2"/>`;
+  return `<svg viewBox="0 0 125 125" fill="#0F1713" aria-label="QR Code da mesa 12"><path d="${d}"/>${f(0, 0)}${f(90, 0)}${f(0, 90)}</svg>`; })();
+
+V.scan = () => `<div class="scan"><div class="hdr on-dark" style="padding:48px 16px 0"><button class="cbtn" data-act="back" aria-label="Fechar" style="background:rgba(255,255,255,.08)">${ic('x', 20, 2)}</button>
+  <div class="hdr-t"><b>Pedir à mesa</b><span>Aponte a câmera para o QR Code da sua mesa</span></div><span class="sp"></span></div>
+  <div class="frame ${S.scanFound ? 'found' : ''}" data-act="found"><i></i><i></i><i></i><i></i>${S.scanFound ? '' : '<span class="laser"></span>'}<div class="qr">${QR}</div></div>
+  ${S.scanFound ? '' : `<p class="cap">Lendo o QR Code…</p>`}</div>`;
+
+const mHead = () => `<div class="olive"><div class="glow"></div>
+  <div class="hdr on-dark wide">${backBtn()}<div class="hdr-t"><b>Mesa 12</b><span>${LOJA}</span></div>
+  <button class="call" data-act="sheet" data-id="garcom"><span>${ic('hand', 18, 1.5)}</span>Chamar garçom</button></div>
+  <div class="hello"><span>Olá, <b>Moises</b>!</span><small>Sua comanda foi iniciada às 19h02</small></div>
+  <div class="totals"><div><small>Valor total</small><b>${brl(sentTotal())}</b></div><div><small>Itens na comanda</small><b>${sentN()}</b></div></div>
+  <div class="otabs"><button class="otab" aria-current="${S.mtab === 'cardapio'}" data-act="mtab" data-id="cardapio">${ic('notebook-text', 18, 1.5)}Cardápio</button>
+  <button class="otab" aria-current="${S.mtab === 'pedido'}" data-act="mtab" data-id="pedido">${ic('receipt-text', 18, 1.5)}Pedido${draftN() ? `<em>${draftN()}</em>` : ''}</button></div></div>`;
+
+const listHead = (t, n, v) => `<div class="lh"><div class="ch"><b>${t}</b><span>${n} ${n === 1 ? 'item' : 'itens'} • ${brl(v)}</span></div><div class="hr"></div></div>`;
+V.mesa = () => {
+  if (S.mtab === 'cardapio') { const [cat, ids] = MENU[S.mcat];
+    return mHead() + `<div class="mpad"><div class="px"><label class="inp bd">${ic('search', 18, 1.6)}<input placeholder="Buscar no cardápio..." aria-label="Buscar no cardápio"></label></div>
+    <div class="ctabs" role="tablist">${MENU.map(([t], i) => `<button class="ctab" aria-current="${i === S.mcat}" data-act="mcat" data-id="${i}">${t}</button>`).join('')}</div>
+    <div class="rows">${ids.length ? ids.map(id => mrow(id, {act:'mopen', badge: S.draft[id] ? `<span class="qadd on" aria-label="${S.draft[id]} no pedido">${S.draft[id]}</span>` : ''})).join('')
+      : `<div class="empty">${img(46, '')}<b>${cat}</b><span>Esta categoria entra na versão completa do cardápio.</span></div>`}</div></div>`; }
+  const d = Object.keys(S.draft), dv = sumOf(S.draft);
+  return mHead() + `<div class="mpad">
+    <section>${listHead('Aguardando envio', draftN(), dv)}
+    ${d.length ? `<div class="rows">${d.map(id => mrow(id, {act:'mopen', prefix:`${S.draft[id]}x `, q:S.draft[id], badge: step(id, S.draft[id], 'dinc', 'ddec')})).join('')}</div>
+      <div class="px"><button class="btn olive-b" data-act="send">${ic('send', 18, 1.75)}Enviar pedido para a cozinha</button></div>`
+      : `<div class="empty">${img(S.sent.length ? 47 : 46, '')}<b>${S.sent.length ? 'Todos os itens já foram para a comanda' : 'Nenhum item no pedido ainda'}</b><span>Adicione itens do cardápio ao seu pedido.</span><button class="btn out sm" style="width:auto;margin-top:8px" data-act="mtab" data-id="cardapio">Ver cardápio</button></div>`}</section>
+    <section>${listHead('Na comanda', sentN(), sentTotal())}
+    ${S.sent.length ? `<div class="rows">${S.sent.map(x => mrow(x.id, {act:'mopen', prefix:`${x.q}x `, q:x.q, extra:`<span class="eta">${ic(x.status ? 'chef-hat' : 'clock', 14, 1.75)}${x.status ? 'Em preparo · chega por volta das 19h20' : 'Recebido pela cozinha'}</span>`})).join('')}</div>
+      <div class="px"><button class="btn olive-b" data-act="go" data-to="pagamento">${ic('banknote', 18, 1.75)}Fechar conta</button></div>`
+      : `<div class="empty">${img(46, '')}<b>Nenhum item enviado ainda</b><span>Envie seu pedido para a cozinha para adicioná-lo à sua comanda.</span></div>`}</section></div>`;
+};
+
+const conta = () => { const sub = sentTotal(), svc = S.service ? Math.round(sub * 10) / 100 : 0, tot = sub + svc; return {sub, svc, tot}; };
+V.pagamento = () => { const c = conta();
+  return `<div class="body">${hdr('Fechar conta', 'Mesa 12 · ' + LOJA)}
+  <div class="card g8"><div class="ch"><b>Sua comanda</b><span>${sentN()} ${sentN() === 1 ? 'item' : 'itens'}</span></div><div class="hr"></div>
+    ${S.sent.map(x => `<div class="li"><span>${x.q}x ${P[x.id].name}</span><b>${brl(P[x.id].price * x.q)}</b></div>`).join('')}
+    <div class="hr"></div>
+    <div class="li"><span>Subtotal</span><b>${brl(c.sub)}</b></div>
+    <div class="li" style="align-items:center"><span>Serviço (10%) <small>· opcional</small></span><span style="display:flex;gap:10px;align-items:center"><b>${brl(c.svc)}</b><button class="toggle" role="switch" aria-checked="${S.service}" aria-pressed="${S.service}" data-act="svc" aria-label="Incluir serviço"></button></span></div>
+    <div class="li" style="font-size:16px;font-weight:600"><span style="color:#000">Total da mesa</span><b style="font-weight:600">${brl(c.tot)}</b></div></div>
+  <div class="card"><b style="font-size:16px;font-weight:500">Como deseja pagar?</b><div style="display:flex;flex-direction:column;gap:8px">
+    ${[['pix','qr-code','Pix','Aprovação na hora'],['card','credit-card','Cartão de crédito','•••• 4417'],['staff','hand','Pagar com o garçom','Ele traz a maquininha até a mesa']].map(([k, i, t, s]) =>
+      radio(S.method === k, 'method', k, `<span class="ricon">${ic(i, 18, 1.5)}</span><span class="rt"><b>${t}</b><small>${s}</small></span>`)).join('')}</div></div>
+  <div style="height:150px"></div></div>`; };
+
+V.pago = () => { const c = conta(); return `<div class="body">
+  <div class="paid"><span class="okbig">${ic('check', 36, 2.5)}</span><b>Conta paga</b><span>${brl(c.tot)} no ${S.method === 'card' ? 'cartão •••• 4417' : 'Pix'} · Mesa 12</span></div>
+  <div class="card"><div class="ib">${ic('receipt-text', 20, 1.5)}<div><b>Comprovante enviado</b><span>Está no seu e-mail e na aba Pedidos, junto com a nota fiscal.</span></div></div>
+    <div class="hr"></div><div class="ib">${ic('door-open', 20, 1.5)}<div><b>Pode ir quando quiser</b><span>O garçom já foi avisado de que a mesa 12 está liberada.</span></div></div></div>
+  <div class="card"><div class="ch"><b>Como foi hoje?</b></div>
+    <div class="stars">${[1, 2, 3, 4, 5].map(n => `<button class="${n <= S.rate ? 'on' : ''}" data-act="rate" data-id="${n}" aria-label="${n} de 5">${ic('star', 32, 1.5)}</button>`).join('')}</div></div>
+  <div class="club">${ic('sparkles', 18, 1.5)}<span>+${Math.round(c.tot)} pontos no Clube Spazio</span></div>
+  <button class="btn" data-act="home">Voltar ao início</button></div>`; };
+
+const PLANS = {
+  descoberta:{t:'Descoberta', s:'1 garrafa + tábua de frios para dois', v:590},
+  adega:{t:'Adega', s:'2 garrafas + tábua de frios completa', v:1090, tag:'Mais escolhido'},
+};
+const REGIOES = [['Champagne','França',true],['Borgonha','França'],['Piemonte','Itália'],['Douro','Portugal'],['Mendoza','Argentina'],['Vale do São Francisco','Brasil']];
+V.assinatura = () => { const pl = PLANS[S.plan];
+  return `<div class="shero" role="img" aria-label="Vinhos tintos, taças e tábua de frios">
+    <div class="hdr on-dark">${backBtn()}<span class="sp"></span></div>
+    <div class="sh-tx"><span class="eyeb gold">${SYM.replace('class="mark"', 'class="i"')}Exclusiva do Clube Spazio</span><h1>Assinatura Spazio</h1></div></div>
+  <div class="pbody">
+    <p class="sh-lead">Todo mês, uma região nova: vinhos escolhidos pela nossa sommelière, com a tábua certa para acompanhar.</p>
+    ${S.sub ? `<div class="card subon"><div class="ib">${ic('circle-check', 22, 1.75)}<div><b>Você assina o plano ${PLANS[S.sub].t}</b><span>A caixa de dezembro chega a partir de 5/12, pelo mesmo delivery do Spazio. Você ganha pontos em dobro no Clube enquanto for assinante.</span></div></div></div>` : ''}
+    <div class="card"><div class="ch"><b>Caixa de dezembro</b><span>chega a partir de 5/12</span></div>
+      <span class="box-t">Borbulhas para as festas</span>
+      <div class="hr"></div>
+      ${[[10,'Champagne Taittinger Nocturne','Champagne, França · mais macio, para a sobremesa'],[12,'Veuve Clicquot Rosé','Champagne, França · frutado, para o brinde'],[6,'Tábua de frios do Empório','Brie, presunto cru, castanhas e geleia de frutas vermelhas']].map(([n, t, d], k) =>
+        `<div class="bline sm">${k === 2 ? `<span class="tb">${img(n, '')}</span>` : img(n, '')}<div class="mtx"><b>${t}</b><span>${d}</span></div></div>`).join('')}
+      <div class="somm"><b>Lívia Duarte, sommelière do Spazio:</b><q>“Dois estilos de champagne lado a lado. Prove os dois com a tábua e descubra qual combina mais com você. Isso ajuda a montar as suas próximas caixas.”</q></div></div>
+    <div class="sec"><span class="eyeb">Seu passaporte do vinho</span>
+      <div class="pass">${REGIOES.map(([r, p, on]) => `<div class="stamp ${on ? 'on' : ''}"><span>${ic(on ? 'circle-check' : 'wine', 18, 1.6)}</span><b>${r}</b><small>${p}</small></div>`).join('')}</div>
+      <p class="desc">Cada caixa vem com a ficha de cada vinho no app (uva, região, temperatura e harmonização) e carimba uma região nova no seu passaporte.</p></div>
+    <div class="card"><b style="font-size:16px;font-weight:500">Escolha seu plano</b><div style="display:flex;flex-direction:column;gap:8px">
+      ${Object.entries(PLANS).map(([k, p]) => radio(S.plan === k, 'plan', k, `<span class="rt"><b>${p.t}${p.tag ? ` <span class="tag">${p.tag}</span>` : ''}</b><small>${p.s}</small></span><span class="rv">${brl(p.v)}<small>/mês</small></span>`)).join('')}</div>
+      <div class="note">${ic('info', 16, 1.5)}<span>Cerca de 20% abaixo do preço da loja. Pausa ou cancela quando quiser, direto no app.</span></div></div>
+    <div class="card g8"><b style="font-size:16px;font-weight:500">Para quem assina</b>
+      ${[['sparkles','Pontos em dobro no Clube Spazio','Em todas as compras, no delivery e na mesa'],['calendar-days','Degustação mensal no Spazio','Convite para provar a caixa do mês com a Lívia'],['book-open','Ficha da sommelière','O que observar na taça e como harmonizar'],['bike','Entrega na sua janela','Ou retire na loja, sem custo']].map(([i, t, d]) => `<div class="ib perk-l">${ic(i, 20, 1.5)}<div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div>
+  </div>`; };
+
+V.perfil = () => `<div class="body">
+  <div class="prof"><span class="avatar">M</span><div><b>Moises</b><span>Cliente desde 2024 · São Luís</span></div></div>
+  <div class="clubcard">${SYM.replace('class="mark"', 'class="mk"')}<small>Clube Spazio</small><span class="lvl">Ouro</span>
+    <div class="prog"><i></i></div><div class="pr"><span>3.050 pontos</span><span>faltam 1.950 para Platina</span></div>
+    <div class="perks"><div class="perk"><b>10%</b>no Bistrô de segunda a quinta</div><div class="perk"><b>2x</b>pontos na Adega</div><div class="perk"><b>1º</b>acesso a degustações</div></div></div>
+  <button class="subcard" data-act="go" data-to="assinatura" aria-label="Conhecer a Assinatura Spazio"><img src="Spazio/assinatura-banner.png" alt="Assinatura Spazio: uma experiência exclusiva. Conhecer a assinatura"></button>
+  <span class="eyeb">Pontos contam em todos os canais</span>
+  <div class="card g8">${[['shopping-bag','Delivery do Empório','+1.056 pts'],['utensils','Mesa 12 · Bistrô','+42 pts'],['wine','Degustação de Barolos','inscrito']].map(([i, t, v]) => `<div class="li" style="align-items:center"><span style="display:flex;gap:10px;align-items:center">${ic(i, 18, 1.5)}${t}</span><b>${v}</b></div>`).join('')}</div>
+  <div class="menu-l">${['Meus pedidos','Endereços','Formas de pagamento','Comandas anteriores','Ajuda'].map(t => `<button data-act="soon">${t}${ic('chevron-right', 18, 1.5)}</button>`).join('')}</div>
+  <div style="height:96px"></div></div>`;
+
+/* ---------------- Docas (rodapé fixo) ---------------- */
+const NAV_ON = ['home','explorar','perfil'];
+const nav = () => `<div class="navwrap"><nav class="nav" aria-label="Navegação">
+  <button data-act="tab" data-to="home" aria-label="Início" aria-current="${S.screen === 'home'}">${ic('house', 28, 1.6)}</button>
+  <button data-act="tab" data-to="explorar" aria-label="Buscar" aria-current="${S.screen === 'explorar'}">${ic('search', 28, 1.6)}</button>
+  <button class="scanb" data-act="go" data-to="scan" aria-label="Pedir à mesa"><span>${ic('scan-qr-code', 28, 2)}</span></button>
+  <button data-act="tab" data-to="pedido" aria-label="Pedidos" aria-current="false">${ic('receipt-text', 28, 1.6)}</button>
+  <button data-act="tab" data-to="perfil" aria-label="Perfil" aria-current="${S.screen === 'perfil'}">${ic('user', 28, 1.6)}</button></nav></div>`;
+const D = {
+  produto: () => `<div class="dock clear"><div class="row"><div class="qty"><button data-act="qdec" aria-label="Diminuir">${ic('minus', 24, 2)}</button><span>${S.qty}</span><button data-act="qinc" aria-label="Aumentar">${ic('plus', 24, 2)}</button></div><button class="btn" data-act="add">Adicionar · ${brl(P[S.param].price * S.qty)}</button></div></div>`,
+  mitem: () => `<div class="dock clear"><div class="row"><div class="qty"><button data-act="qdec" aria-label="Diminuir">${ic('minus', 24, 2)}</button><span>${S.qty}</span><button data-act="qinc" aria-label="Aumentar">${ic('plus', 24, 2)}</button></div><button class="btn" data-act="madd">Incluir no pedido</button></div></div>`,
+  sacola: () => cartN() ? `<div class="dock"><div class="tot"><span>Total</span><span>${brl(sumOf(S.cart) + (S.ship === 'home' ? 12 : 0))}</span></div><button class="btn" data-act="order">Fazer pedido</button></div>` : '',
+  assinatura: () => S.sub ? `<div class="dock"><button class="btn out" data-act="soon">Gerenciar assinatura</button></div>`
+    : `<div class="dock"><div class="tot"><span>Plano ${PLANS[S.plan].t}</span><span>${brl(PLANS[S.plan].v)}/mês</span></div><button class="btn" data-act="subscribe">Assinar o plano ${PLANS[S.plan].t}</button></div>`,
+  pagamento: () => { const c = conta(); return `<div class="dock"><div class="tot"><span>Total</span><span>${brl(c.tot)}</span></div><button class="btn" data-act="pay">${S.method === 'staff' ? 'Chamar garçom com a maquininha' : `Pagar ${brl(c.tot)}`}</button></div>`; },
+  scan: () => S.scanFound ? `<div class="sheet"><div class="found"><span class="okc">${ic('check', 20, 2.5)}</span><div><small>Mesa identificada</small><b>Mesa 12 · ${LOJA}</b></div></div>
+    <p class="lead">Explore o cardápio, faça seus pedidos, chame o garçom e acompanhe sua conta. Tudo em um só lugar.</p>
+    <button class="btn" data-act="open-mesa">Abrir comanda</button></div>` : '',
+};
+
+/* ---------------- Render ---------------- */
+const $ = s => document.querySelector(s);
+const view = () => $('#view'), dockEl = () => $('#dock');
+const COLOR_TOP = ['colecao','produto','mitem','scan','mesa','assinatura'];
+let scanTimer;
+function render(keep){
+  const v = view(), top = keep ? v.scrollTop : 0;
+  v.innerHTML = V[S.screen]();
+  const scr = $('.screen');
+  scr.classList.toggle('on-color', COLOR_TOP.includes(S.screen));
+  scr.classList.remove('scrolled');
+  let o = (D[S.screen] ? D[S.screen]() : '');
+  if (NAV_ON.includes(S.screen)) o = nav() + o;
+  const showBar = cartN() && ['home','explorar','colecao'].includes(S.screen);
+  if (showBar) o += `<!--OV--><button class="cartbar" data-act="go" data-to="sacola" style="bottom:${NAV_ON.includes(S.screen) ? 104 : 32}px"><span><em>${cartN()}</em>Ver sacola</span><span>${brl(sumOf(S.cart))}</span></button>`;
+  if (S.sheet === 'garcom') o += `<!--OV--><div class="backdrop" data-act="closesheet"><div class="sheet" data-stop="1"><div class="grab"></div>
+    <div class="sh-t"><b>Chamar garçom</b><span>O Rafael está atendendo a mesa 12 e recebe o aviso na hora.</span></div>
+    <div>${[['hand','Vir até a mesa'],['utensils','Talheres ou guardanapos'],['wine','Ajuda com o cardápio ou o vinho'],['credit-card','Trazer a maquininha']].map(([i, t]) => `<button class="opt" data-act="call" data-msg="${t}"><span class="ricon">${ic(i, 18, 1.5)}</span><span>${t}</span>${ic('chevron-right', 18, 1.5)}</button>`).join('')}</div>
+    <button class="lnk" data-act="closesheet2">Cancelar</button></div></div>`;
+  const ov = o.split('<!--OV-->');
+  dockEl().innerHTML = ov[0]; $('#ov').innerHTML = ov.slice(1).join('');
+  v.scrollTop = top;
+  const q = $('#q'); if (q) q.oninput = e => { S.q = e.target.value; const pos = e.target.selectionStart; render(true); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); };
+  if (S.screen === 'scan' && !S.scanFound){ clearTimeout(scanTimer); scanTimer = setTimeout(() => { if (S.screen === 'scan' && !S.scanFound){ S.scanFound = true; render(); } }, 1800); }
+  syncRail();
+}
+function clearOverlays(){}
+function enter(k, p = null){ S.screen = k; S.param = p; S.qty = 1; if (k === 'scan') S.scanFound = false; if (k !== S.screen) S.sheet = null; }
+function go(k, p = null){ S.history.push({screen:S.screen, param:S.param}); S.sheet = null; enter(k, p); clearOverlays(); render(); }
+function back(){ const h = S.history.pop() || {screen:'home', param:null}; S.sheet = null; enter(h.screen, h.param); clearOverlays(); render(); }
+let tt; function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200); }
+
+const A = {
+  back, home:() => { S.history = []; enter('home'); clearOverlays(); render(); },
+  go:el => go(el.dataset.to), tab:el => { S.history = []; if (el.dataset.to === 'pedido' && !S.order) S.order = {cart:{veuve:1, caldo:1}, ship:'home'}; if (el.dataset.to === 'pedido') S.history = [{screen:S.screen, param:null}]; enter(el.dataset.to); clearOverlays(); render(); },
+  open:el => go('produto', el.dataset.id), mopen:el => go('mitem', el.dataset.id),
+  soon:() => toast('Disponível na versão completa'), toast:el => toast(el.dataset.msg),
+  chip:el => { S.chip = el.dataset.id; S.cat = null; S.q = ''; if (S.screen !== 'explorar') go('explorar'); else render(true); },
+  tile:el => { if (!el.dataset.id && el.closest('.cats')) return toast('Seção disponível na versão completa'); S.cat = el.dataset.id || null; S.q = ''; if (S.screen !== 'explorar') go('explorar'); else render(); },
+  qinc:() => { S.qty++; render(true); }, qdec:() => { S.qty = Math.max(1, S.qty - 1); render(true); },
+  add:() => { const id = S.param; S.cart[id] = (S.cart[id] || 0) + S.qty; const n = S.qty; back(); toast(`${n > 1 ? n + 'x ' : ''}${P[id].name.split(' ').slice(0, 3).join(' ')} na sacola`); },
+  inc:el => { S.cart[el.dataset.id]++; render(true); }, dec:el => { const id = el.dataset.id; if (--S.cart[id] <= 0) delete S.cart[id]; render(true); },
+  ship:el => { S.ship = el.dataset.id; render(true); },
+  order:() => { S.order = {cart:{...S.cart}, ship:S.ship}; S.cart = {}; S.history = [{screen:'home', param:null}]; enter('pedido'); clearOverlays(); render(); toast('Pedido confirmado'); },
+  found:() => { if (S.scanFound) return; clearTimeout(scanTimer); S.scanFound = true; render(); },
+  'open-mesa':() => { S.history = [{screen:'home', param:null}]; S.mtab = 'cardapio'; enter('mesa'); render(); },
+  mtab:el => { S.mtab = el.dataset.id; render(); }, mcat:el => { S.mcat = +el.dataset.id; render(true); },
+  madd:() => { const id = S.param; S.draft[id] = (S.draft[id] || 0) + S.qty; back(); toast('Incluído no pedido. Envie quando quiser'); },
+  dinc:el => { S.draft[el.dataset.id]++; render(true); }, ddec:el => { const id = el.dataset.id; if (--S.draft[id] <= 0) delete S.draft[id]; render(true); },
+  send:() => { if (!draftN()) return; const batch = Object.entries(S.draft).map(([id, q]) => ({id, q, status:0})); S.draft = {};
+    batch.forEach(b => { const ex = S.sent.find(x => x.id === b.id); if (ex) { ex.q += b.q; ex.status = 0; } else S.sent.push(b); });
+    render(); toast('Pedido enviado para a cozinha');
+    setTimeout(() => { S.sent.forEach(x => x.status = 1); if (S.screen === 'mesa') render(true); }, 2500); },
+  sheet:el => { S.sheet = el.dataset.id; clearOverlays(); render(true); },
+  closesheet:() => { S.sheet = null; clearOverlays(); render(true); }, closesheet2:() => A.closesheet(),
+  call:el => { S.sheet = null; clearOverlays(); render(true); toast(`Rafael avisado: ${el.dataset.msg.toLowerCase()}`); },
+  svc:() => { S.service = !S.service; render(true); },
+  method:el => { S.method = el.dataset.id; render(true); },
+  pay:() => { if (S.method === 'staff') return toast('O Rafael está a caminho com a maquininha'); S.history = [{screen:'home', param:null}]; enter('pago'); render(); },
+  plan:el => { S.plan = el.dataset.id; render(true); },
+  subscribe:() => { S.sub = S.plan; render(true); toast(`Bem-vindo à Assinatura Spazio · plano ${PLANS[S.sub].t}`); },
+  rate:el => { S.rate = +el.dataset.id; render(true); toast('Obrigado pela avaliação'); },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el || !el.closest('.screen')) return;
+  if (el.dataset.act === 'closesheet' && e.target.closest('[data-stop]')) return;
+  const stop = e.target.closest('[data-stop]'); if (stop && !stop.contains(el)) return;
+  e.preventDefault(); (A[el.dataset.act] || (() => {}))(el);
+});
+document.addEventListener('keydown', e => { const r = e.target.closest && e.target.closest('[role="button"][data-act]'); if (r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); r.click(); } });
+document.addEventListener('scroll', e => { if (e.target.id !== 'view') return; $('.screen').classList.toggle('scrolled', e.target.scrollTop > 220 && COLOR_TOP.includes(S.screen) && !['mesa','scan'].includes(S.screen)); }, true);
+
+/* ---------------- Roteiro do apresentador ---------------- */
+const JOURNEYS = ['Em casa · delivery', 'No Bistrô · à mesa', 'Relacionamento'];
+const SCREENS = [
+  {k:'home', t:'Home', j:0, note:'Duas portas logo no topo, Empório e Bistrô. Abaixo vem curadoria em vez de corredor: coleções, seleção da sommelière e o que está saindo do Bistrô agora.', vs:'O Mateus Mais vende sortimento; o Spazio vende curadoria'},
+  {k:'colecao', t:'Coleção Casa e Mesa', j:0, note:'Coleções organizam o catálogo por ocasião. É a vitrine editorial do Empório, com a mesma linguagem visual da loja.', vs:'Conteúdo que leva à compra'},
+  {k:'produto', p:'veuve', t:'Produto da adega', j:0, note:'A nota da sommelière Lívia Duarte traz para o app o atendimento que o cliente tem na loja. Quantidade e "Adicionar" ficam fixos no rodapé.', vs:'O especialista da loja dentro da página do produto'},
+  {k:'produto', p:'caldo', t:'Prato do Bistrô', j:0, note:'O mesmo padrão de página para um prato: tempo de preparo, porção e observação para a cozinha. E ele vai para a mesma sacola do champagne.', vs:'Uma sacola só para Empório e Bistrô'},
+  {k:'explorar', t:'Explorar', j:0, note:'Busca e categorias espelham as seções da loja física: adega, queijaria, charcutaria, boulangerie. Experimente buscar "champagne" ou tocar em Adega.', vs:'Navegar como quem anda pela loja'},
+  {k:'sacola', t:'Sacola', j:0, note:'Itens separados por origem, cada um com o seu prazo. Receber em casa ou retirar na loja, e cartão salvo com parcelamento.', vs:'Uma compra para o cliente, duas operações por trás'},
+  {k:'pedido', t:'Acompanhamento', j:0, note:'As etapas reais do pedido: confirmação, separação do Empório, preparo no Bistrô, saída e entrega. "Nenhum item foi cortado" responde à maior ansiedade de quem compra no delivery.', vs:'Transparência sobre ruptura e preparo'},
+  {k:'scan', t:'Escanear a mesa', j:1, note:'Sábado, 19h, no Bistrô. Moises aponta a câmera para o QR da mesa 12 e a comanda abre no mesmo app que ele usa em casa.', vs:'Sem baixar outro app e sem cadastro na mesa'},
+  {k:'mesa', tab:'cardapio', st:'empty', t:'Cardápio da mesa', j:1, note:'O cabeçalho da mesa fica sempre visível, com o valor da comanda e o atalho para chamar o garçom. O cardápio completo é organizado por categoria.', vs:'O cardápio e a conta na mão do cliente'},
+  {k:'mitem', p:'manteiga', t:'Item do cardápio', j:1, note:'"Incluir no pedido" monta o pedido antes de ir para a cozinha, com observação por item.', vs:'Pedido sem erro de anotação'},
+  {k:'mesa', tab:'pedido', st:'draft', t:'Aguardando envio', j:1, note:'O pedido fica em rascunho até o cliente enviar. Dá para revisar e ajustar quantidades sem precisar do garçom.', vs:'O cliente decide quando o pedido vai para a cozinha'},
+  {k:'mesa', tab:'pedido', st:'sent', t:'Na comanda', j:1, note:'Depois de enviado, o item entra na comanda com o status do preparo e a previsão de chegada. O total no topo atualiza na hora.', vs:'Status de preparo, como no delivery'},
+  {k:'mesa', tab:'pedido', st:'sent', sheet:'garcom', t:'Chamar garçom', j:1, note:'O chamado diz o motivo, e o garçom já chega sabendo o que levar. O app complementa o atendimento, não o substitui.', vs:'O atendimento humano continua no centro'},
+  {k:'pagamento', t:'Fechar conta', j:1, note:'Consumo da mesa revisado no app, serviço de 10% opcional e visível, e pagamento por Pix, cartão salvo ou com o garçom.', vs:'Sem esperar a maquininha'},
+  {k:'pago', t:'Conta paga', j:1, note:'Comprovante no app, avaliação em um toque e pontos no Clube Spazio. O cliente vai embora quando quiser.', vs:'Sair sem pedir a conta'},
+  {k:'perfil', t:'Perfil e Clube Spazio', j:2, note:'O Clube liga as duas experiências: compras do Empório, delivery do Bistrô e consumo na mesa somam pontos no mesmo programa.', vs:'Uma fidelidade para loja, delivery e mesa'},
+  {k:'assinatura', t:'Assinatura Spazio', j:2, note:'Uma caixa por mês com vinhos escolhidos pela sommelière e uma tábua de frios do Empório para acompanhar. O passaporte do vinho transforma cada caixa em uma região nova aprendida, e a degustação mensal traz o assinante de volta à loja.', vs:'Receita recorrente que ensina o cliente a comprar mais vinho'},
+];
+const mesaSt = () => draftN() ? 'draft' : S.sent.length ? 'sent' : 'empty';
+function scrIdx(){
+  const m = x => x.k === S.screen && (x.sheet || null) === (S.sheet || null) && (!x.p || x.p === S.param) && (!x.tab || x.tab === S.mtab) && (!x.st || x.st === mesaSt());
+  let i = SCREENS.findIndex(m); if (i < 0) i = SCREENS.findIndex(x => x.k === S.screen && (!x.p || x.p === S.param)); if (i < 0) i = SCREENS.findIndex(x => x.k === S.screen); return i;
+}
+function seed(sc){
+  const MS = ['mesa','mitem','pagamento','pago'];
+  if ((sc.k === 'sacola') && !cartN()) S.cart = {veuve:1, caldo:1};
+  if (sc.k === 'pedido' && !S.order) S.order = {cart:{veuve:1, caldo:1}, ship:'home'};
+  if (MS.includes(sc.k)){
+    if (sc.st === 'empty'){ S.draft = {}; S.sent = []; }
+    if (sc.st === 'draft'){ S.draft = {manteiga:1}; S.sent = []; }
+    if (sc.st === 'sent'){ S.draft = {}; if (!S.sent.length) S.sent = [{id:'manteiga', q:1, status:1}]; }
+    if (['pagamento','pago'].includes(sc.k) && !S.sent.length) S.sent = [{id:'manteiga', q:1, status:1}, {id:'ovos', q:1, status:1}];
+    if (sc.tab) S.mtab = sc.tab;
+  }
+}
+function jump(i){
+  const sc = SCREENS[i]; if (!sc) return;
+  clearTimeout(scanTimer); seed(sc);
+  const H = {home:[], colecao:['home'], produto: sc.p === 'veuve' ? ['home','colecao'] : ['home'], explorar:['home'], sacola:['home'], pedido:['home'], scan:['home'],
+    mesa:['home'], mitem:['home','mesa'], pagamento:['home','mesa'], pago:['home'], perfil:[], assinatura:['perfil']}[sc.k] || ['home'];
+  S.history = H.map(s => ({screen:s, param:null}));
+  if (sc.k === 'mitem') S.mtab = 'cardapio';
+  enter(sc.k, sc.p || null); S.sheet = sc.sheet || null; if (sc.k === 'scan') S.scanFound = false;
+  clearOverlays(); render();
+}
+function syncRail(){
+  const i = scrIdx(), sc = SCREENS[i];
+  document.querySelectorAll('.jbtn').forEach(b => b.setAttribute('aria-current', String(+b.dataset.i === i)));
+  const note = $('#note'), vs = $('#vs'), mt = $('#mt');
+  if (sc){ note.textContent = sc.note; vs.textContent = sc.vs ? '→ ' + sc.vs : ''; if (mt) mt.innerHTML = `${JOURNEYS[sc.j]}<b>${i + 1}. ${sc.t}</b>`; }
+}
+function buildRail(){
+  $('#journeys').innerHTML = JOURNEYS.map((j, ji) => `<div class="journey"><h3>${j}</h3>${SCREENS.map((s, i) => s.j === ji ? `<button class="jbtn" data-i="${i}"><span class="n">${String(i + 1).padStart(2, '0')}</span>${s.t}</button>` : '').join('')}</div>`).join('');
+  document.querySelectorAll('.jbtn').forEach(b => b.onclick = () => jump(+b.dataset.i));
+  const step = d => { const i = scrIdx(); jump(Math.max(0, Math.min(SCREENS.length - 1, (i < 0 ? 0 : i) + d))); };
+  $('#prev').onclick = () => step(-1); $('#next').onclick = () => step(1);
+  $('#mprev').onclick = () => step(-1); $('#mnext').onclick = () => step(1);
+  $('#reset').onclick = () => { S = fresh(); clearOverlays(); render(); };
+  document.addEventListener('keydown', e => { if (e.target.matches('input,select,textarea') || document.body.classList.contains('show-arch')) return; if (e.key === 'ArrowRight') step(1); if (e.key === 'ArrowLeft') step(-1); });
+}
+function clock(){ $('#clock').textContent = ['scan','mesa','mitem','pagamento','pago'].includes(S.screen) ? '19:24' : '20:40'; }
+const _r = render; render = function(k){ _r(k); clock(); };
+
+/* ================= Por baixo dos panos · arquitetura ================= */
+const ARCH = {
+  people:[
+    {id:'cliente', i:'smartphone', t:'Cliente', s:'App Spazio', st:'new'},
+    {id:'separador', i:'scan-barcode', t:'Separador da loja', s:'App do coletor', st:'ok'},
+    {id:'cozinheiro', i:'chef-hat', t:'Cozinha e garçons', s:'Tela da cozinha', st:'new'},
+    {id:'entregador', i:'bike', t:'Entregador', s:'App do entregador', st:'adj'},
+  ],
+  bff:{id:'bff', i:'network', t:'Camada do app Spazio', tech:'BFF · API própria do app', st:'new',
+    what:'Uma API feita para o app Spazio. Ela conversa com os sistemas do Mateus Mais e com os serviços novos, para o cliente ter a experiência do Spazio sem que a gente duplique sistemas.',
+    build:['Contrato de API do app','Regras de exibição do Spazio (coleções, sommelière)','Autenticação compartilhada com o Mateus Mais']},
+  sv:{
+    contas:{i:'user-round-check', t:'Contas de clientes', tech:'Identidade · login único (SSO) e bases sincronizadas', st:'ok',
+      what:'Quem já tem conta no Mateus Mais entra no Spazio com o mesmo login, sem novo cadastro. As duas bases se alimentam: um dado atualizado em um app vale no outro.',
+      reuse:['Nome e sobrenome','Telefone e e-mail','Data de nascimento','Cidade'],
+      build:['Aceite do cliente para usar a conta no Spazio']},
+    vitrine:{i:'store', t:'Catálogo do Empório', tech:'Vitrine · API de produtos', st:'ok',
+      what:'Os produtos do Spazio já estão cadastrados na Vitrine do Mateus Mais, com fotos, descrição, preço e estoque por loja.',
+      reuse:['SKUs do Spazio já cadastrados','Preço e estoque por loja','Fotos e ficha técnica'],
+      build:['Coleções e nota da sommelière (conteúdo editorial)']},
+    checkout:{i:'shopping-bag', t:'Sacola e checkout', tech:'Carrinho · checkout', st:'ok',
+      what:'A mesma sacola e a mesma finalização de compra que o Mateus Mais já usa todos os dias.',
+      reuse:['Carrinho e finalização','Frete e janelas de entrega','Cupons e promoções'],
+      build:['Sacola única com itens do Empório e do Bistrô']},
+    pagamentos:{i:'wallet-cards', t:'Pagamentos e financeiro', tech:'Gateway de pagamento · conciliação', st:'ok',
+      what:'Cartão, Pix e parcelamento, com antifraude, conciliação e nota fiscal no fluxo financeiro que já existe.',
+      reuse:['Cartões salvos e Pix','Antifraude','Conciliação e nota fiscal'],
+      build:['Pagamento da conta da mesa, com taxa de serviço opcional']},
+    pedidos:{i:'clipboard-list', t:'Gestão de pedidos', tech:'OMS · orquestração de pedidos', st:'ok',
+      what:'Todo pedido pago passa por aqui, inclusive os do Bistrô. Daqui ele segue para quem vai atender: a separação na loja, a cozinha e a entrega. O cliente é avisado a cada etapa.',
+      reuse:['Status e histórico do pedido','Notificações ao cliente','Envio para a loja de destino'],
+      build:['Encaminhar a parte do Bistrô para a tela da cozinha','Separar um pedido em duas frentes: loja e cozinha']},
+    coletor:{i:'scan-barcode', t:'Separação na loja', tech:'App do coletor · picking', st:'ok',
+      what:'O separador recebe os itens do Empório e confirma um a um, do mesmo jeito que já faz nas lojas do Mateus Mais.',
+      reuse:['Telas de separação','Leitura de código de barras','Troca e corte de itens'],
+      build:['Cadastrar o Spazio como loja de destino']},
+    entregas:{i:'bike', t:'Entregas', tech:'Last mile · roteirização', st:'adj',
+      what:'Despacha o pedido para o entregador e mostra o trajeto ao cliente em tempo real.',
+      reuse:['App do entregador','Rastreio em tempo real','Janelas de entrega'],
+      build:['Entregas de moto: capacidade, rotas e prazos mais curtos (hoje o fluxo é pensado para furgões)']},
+    cardapio:{i:'book-open', t:'Cardápio do Bistrô', tech:'Catálogo de pratos', st:'new',
+      what:'Cadastro de pratos, categorias, preços, tempo de preparo e horários em que cada prato está disponível.',
+      build:['Dois caminhos possíveis: um backend próprio do Spazio ou um novo tipo de item dentro da Vitrine']},
+    cozinha:{i:'chef-hat', t:'Cozinha e salão', tech:'KDS · Kitchen Display System', st:'new',
+      what:'Tela na cozinha que recebe os pratos na ordem certa, do delivery e das mesas, e avisa o salão quando um cliente chama o garçom.',
+      build:['Fila de preparo com tempo por prato','Aviso de "pronto para servir" ou "pronto para despachar"','Chamados das mesas']},
+    comanda:{i:'qr-code', t:'Mesas e comanda', tech:'Sessão de mesa via QR Code', st:'new',
+      what:'Liga o cliente à mesa pelo QR Code, guarda cada rodada pedida e fecha a conta no app.',
+      build:['Cadastro de mesas e QR Codes','Abertura e fechamento de comanda','Rodadas enviadas à cozinha']},
+    clube:{i:'gem', t:'Clube Spazio', tech:'Fidelidade · pontos e níveis', st:'new',
+      what:'Soma pontos em compras do Empório, delivery do Bistrô e consumo na mesa, libera benefícios por nível e oferece a Assinatura Spazio de vinhos e frios.',
+      build:['Regras de pontuação, níveis e resgate (não existe nada parecido no Mateus Mais hoje)','Assinatura mensal: cobrança recorrente e montagem da caixa do mês']},
+  },
+};
+const ST = {ok:['Já existe no Mateus Mais','circle-check'], adj:['Existe, com ajustes','wrench'], new:['Novo para o Spazio','hammer']};
+const FLOWS = {
+  casa:{t:'Pedido em casa', steps:[
+    ['Moises entra com a conta que já usa no Mateus Mais.', ['cliente','bff','contas']],
+    ['Ele navega pelo Empório e pelo cardápio do Bistrô.', ['cliente','bff','vitrine','cardapio']],
+    ['Champagne e caldo vão para a mesma sacola, e ele paga no cartão salvo.', ['cliente','bff','checkout','pagamentos']],
+    ['A gestão de pedidos recebe o pedido pago e o encaminha em duas frentes: loja e cozinha.', ['pedidos','coletor','cozinha']],
+    ['O separador confirma o champagne; a cozinha prepara o caldo.', ['separador','coletor','cozinheiro','cozinha']],
+    ['Tudo pronto, o pedido sai de moto e o cliente acompanha o trajeto.', ['pedidos','entregas','entregador','cliente']],
+    ['A compra vira pontos no Clube Spazio.', ['pedidos','clube','cliente']],
+  ]},
+  mesa:{t:'Pedido na mesa', steps:[
+    ['Moises escaneia o QR Code e a mesa 12 abre no app, já com a conta dele.', ['cliente','bff','comanda','contas']],
+    ['Ele escolhe os pratos no cardápio do Bistrô.', ['cliente','bff','cardapio']],
+    ['Ao enviar a rodada, o pedido aparece na tela da cozinha.', ['comanda','cozinha','cozinheiro']],
+    ['Se ele chama o garçom, o aviso chega ao salão com o motivo.', ['cliente','comanda','cozinha','cozinheiro']],
+    ['Ele fecha a conta pelo app, com Pix ou cartão.', ['cliente','bff','comanda','pagamentos']],
+    ['O consumo vira pontos no Clube Spazio.', ['comanda','clube','cliente']],
+  ]},
+};
+const AS = {flow:'casa', step:-1, sel:null, timer:null};
+const nodeCard = (id, n, kind) => `<button class="an an-${kind} st-${n.st}" data-node="${id}" aria-label="${n.t}">
+  <span class="an-ic">${ic(n.i, 20, 1.6)}</span><span class="an-tx"><b>${n.t}</b><small>${n.tech || n.s}</small></span>
+  <span class="an-st" title="${ST[n.st][0]}">${ic(ST[n.st][1], 14, 2)}</span></button>`;
+function archBuild(){
+  const el = document.getElementById('arch'); if (!el) return;
+  const groups = [['Reaproveitado do Mateus Mais', ['contas','vitrine','checkout','pagamentos','pedidos','coletor','entregas'], 'mm'],
+                  ['Construído para o Spazio', ['cardapio','cozinha','comanda','clube'], 'sp']];
+  const nOk = Object.values(ARCH.sv).filter(s => s.st !== 'new').length, nAll = Object.keys(ARCH.sv).length;
+  el.querySelector('#a-stats').innerHTML = `
+    <div class="kpi"><b>${nOk} de ${nAll}</b><span>serviços já rodam no Mateus Mais</span></div>
+    <div class="kpi"><b>${Object.values(ARCH.sv).filter(s => s.st === 'adj').length}</b><span>precisa de ajuste (entregas de moto)</span></div>
+    <div class="kpi"><b>${nAll - nOk}</b><span>serviços novos, todos do Bistrô e do Clube</span></div>`;
+  el.querySelector('#a-board').innerHTML = `
+    <div class="band"><span class="band-l">Quem usa</span><div class="people">${ARCH.people.map(p => nodeCard(p.id, p, 'p')).join('')}</div></div>
+    <div class="wire"><span>app e telas de operação chamam as APIs</span></div>
+    <div class="band"><span class="band-l">Porta de entrada</span>${nodeCard('bff', ARCH.bff, 'b')}</div>
+    <div class="wire"><span>integração por API e eventos</span></div>
+    <div class="band"><span class="band-l">Serviços</span><div class="groups">${groups.map(([t, ids, c]) => `<div class="grp grp-${c}"><h4>${t}</h4><div class="grid">${ids.map(id => nodeCard(id, ARCH.sv[id], 's')).join('')}</div></div>`).join('')}</div></div>`;
+  el.querySelector('#a-legend').innerHTML = Object.entries(ST).map(([k, [t, i]]) => `<span class="lg st-${k}"><span class="an-st">${ic(i, 14, 2)}</span>${t}</span>`).join('');
+  el.addEventListener('click', e => {
+    const n = e.target.closest('[data-node]'); if (n){ AS.sel = n.dataset.node; archPaint(); return; }
+    const f = e.target.closest('[data-flow]'); if (f){ archStop(); AS.flow = f.dataset.flow; AS.step = 0; AS.sel = null; archPaint(); return; }
+    const s = e.target.closest('[data-astep]'); if (s){ archStop(); AS.step = +s.dataset.astep; AS.sel = null; archPaint(); return; }
+    if (e.target.closest('#a-play')){ AS.timer ? archStop() : archPlay(); archPaint(); return; }
+    if (e.target.closest('#a-clear')){ archStop(); AS.step = -1; AS.sel = null; archPaint(); }
+  });
+  archPaint();
+}
+function archStop(){ clearInterval(AS.timer); AS.timer = null; }
+function archPlay(){ AS.sel = null; if (AS.step < 0 || AS.step >= FLOWS[AS.flow].steps.length - 1) AS.step = 0;
+  AS.timer = setInterval(() => { const n = FLOWS[AS.flow].steps.length; if (AS.step >= n - 1){ archStop(); } else AS.step++; archPaint(); }, 2600); }
+function archPaint(){
+  const el = document.getElementById('arch'); if (!el) return;
+  const F = FLOWS[AS.flow], on = AS.step >= 0 ? F.steps[AS.step][1] : AS.sel ? [AS.sel] : null;
+  el.classList.toggle('tracing', !!on);
+  el.querySelectorAll('[data-node]').forEach(b => { const hit = on && on.includes(b.dataset.node); b.classList.toggle('hit', !!hit); b.setAttribute('aria-pressed', String(b.dataset.node === AS.sel)); });
+  el.querySelector('#a-flow').innerHTML = `<div class="ftabs">${Object.entries(FLOWS).map(([k, f]) => `<button data-flow="${k}" aria-pressed="${k === AS.flow && AS.step >= 0}">${ic(k === 'casa' ? 'bike' : 'qr-code', 16, 1.75)}${f.t}</button>`).join('')}</div>
+    <ol class="fsteps">${F.steps.map(([t], i) => `<li><button data-astep="${i}" class="${i === AS.step ? 'cur' : i < AS.step ? 'done' : ''}"><span>${i + 1}</span>${t}</button></li>`).join('')}</ol>
+    <div class="fctl"><button class="rbtn" id="a-play">${AS.timer ? 'Pausar' : 'Reproduzir o fluxo'}</button>${on ? '<button class="rbtn" id="a-clear">Limpar destaque</button>' : ''}</div>`;
+  const d = el.querySelector('#a-detail'), id = AS.sel;
+  const n = id ? (ARCH.sv[id] || (id === 'bff' ? ARCH.bff : null)) : null;
+  const p = id && !n ? ARCH.people.find(x => x.id === id) : null;
+  d.innerHTML = n ? `<div class="dt-h st-${n.st}"><span class="an-ic">${ic(n.i, 22, 1.6)}</span><div><b>${n.t}</b><small>${n.tech}</small></div></div>
+      <span class="pill-st st-${n.st}">${ic(ST[n.st][1], 14, 2)}${ST[n.st][0]}</span>
+      <p>${n.what}</p>
+      ${n.reuse ? `<h5>O que já vem pronto</h5><ul class="ok-l">${n.reuse.map(x => `<li>${ic('circle-check', 16, 1.75)}${x}</li>`).join('')}</ul>` : ''}
+      ${n.build ? `<h5>${n.st === 'new' ? 'O que vamos construir' : 'O que falta'}</h5><ul class="bd-l">${n.build.map(x => `<li>${ic(n.st === 'new' ? 'hammer' : 'wrench', 16, 1.75)}${x}</li>`).join('')}</ul>` : ''}`
+    : p ? `<div class="dt-h st-${p.st}"><span class="an-ic">${ic(p.i, 22, 1.6)}</span><div><b>${p.t}</b><small>${p.s}</small></div></div><span class="pill-st st-${p.st}">${ic(ST[p.st][1], 14, 2)}${ST[p.st][0]}</span>
+      <p>${{cliente:'O app que mostramos no protótipo. É a única peça que o cliente vê.', separador:'O mesmo app de separação que as lojas do Mateus Mais já usam.', cozinheiro:'Uma tela nova na cozinha do Bistrô, alimentada pelo delivery e pelas mesas.', entregador:'O app de entregas do Mateus Mais, ajustado para motos.'}[p.id]}</p>`
+    : `<p class="dt-empty">${ic('plug', 20, 1.6)}Toque em qualquer bloco para ver o que ele faz, o que já vem pronto e o que falta construir.</p>`;
+}
+function archOpen(on){
+  document.body.classList.toggle('show-arch', on);
+  if (on){ document.getElementById('arch').scrollTop = 0; window.scrollTo(0, 0); } else archStop();
+}
+
+buildRail(); render();
+archBuild();
+document.querySelectorAll('[data-arch]').forEach(b => b.onclick = () => archOpen(b.dataset.arch === 'open'));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('show-arch')) archOpen(false); });
+
+</script>
+</body>
+</html>
